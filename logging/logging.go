@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-func ConfigureLogger(opts ...LogConfig) {
+func ConfigureLogger(opts ...LogConfig) error {
 	config := ConfigureLoggerOptions{
 		Level: zerolog.InfoLevel,
 	}
@@ -20,6 +20,8 @@ func ConfigureLogger(opts ...LogConfig) {
 	logger := log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 
 	log.Logger = logger
+
+	return nil
 }
 
 type ConfigureLoggerOptions struct {

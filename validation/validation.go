@@ -125,43 +125,36 @@ func copyStruct2(st reflect.Type, src reflect.Value) interface{} {
 	return so.Interface()
 }
 
-func copyStruct(src interface{}, dst interface{}) {
-	//so := reflect.New(st)
-	//dVal := src
-	//for i := 0; i < st.NumField(); i++ {
-	//	field := st.Field(i)
-	//	log.Debug().Interface("field", field.Name).Msg("field")
-	//	vValue := dVal.FieldByName(field.Name)
-	//	tValue := vValue.Type()
-	//	vType := field.Type
-	//	if tValue.AssignableTo(vType) {
-	//		log.Debug().Interface("vValue", vValue).Msg("AssignableTo")
-	//		so.Elem().FieldByName(field.Name).Set(vValue)
-	//	} else if vValue.CanConvert(vType) {
-	//		log.Debug().Interface("vValue", vValue).Msg("CanConvert")
-	//		so.Elem().FieldByName(field.Name).Set(vValue.Convert(vType))
-	//	} else {
-	//		log.Debug().Interface("vValue", vValue).Msg("Pointer")
-	//		if vValue.Kind() == reflect.Struct {
-	//			if field.Type.Kind() == reflect.Ptr {
-	//				vStruct := copyStruct(field.Type.Elem(), vValue)
-	//				so.Elem().FieldByName(field.Name).Set(reflect.ValueOf(&vStruct))
-	//				continue
-	//			}
-	//			vStruct := copyStruct(field.Type, vValue)
-	//			so.Elem().FieldByName(field.Name).Set(reflect.ValueOf(vStruct))
-	//			continue
-	//		}
-	//		so.Elem().FieldByName(field.Name).Set(reflect.NewAt(vType.Elem(), unsafe.Pointer(vValue.UnsafeAddr())))
-	//	}
-	//
-	//}
-	//log.Debug().Interface("so", so.Interface()).Msg("so")
+func copyStruct(src interface{}, dst interface{}) error {
+	sv := reflect.ValueOf(src)
+	if sv.Kind() == reflect.Ptr {
+		sv = sv.Elem()
+	}
+	dv := reflect.ValueOf(dst)
+	if dv.Kind() == reflect.Ptr {
+		dv = dv.Elem()
+	}
 
-	return
+	dt := dv.Type()
+
+	log.Debug().Interface("dv", dv).Interface("dt", dt).Send()
+
+	for i := range dt.NumField() {
+		f := dt.Field(i)
+
+		sf := sv.FieldByName(f.Name)
+		df := dv.FieldByName(f.Name)
+
+		sVal := sf.Elem()
+		log.Debug().Interface("field", f).Interface("sval", sVal).Msg("field")
+
+		df.Set(sVal)
+	}
+
+	return nil
 }
 
-func parseAndValidate(target any, data []byte) error {
+func parse(target interface{}, data []byte) (interface{}, error) {
 	// Create copy of the given type, but with all fields as pointers
 	ptrType := createPointerStruct(target)
 
@@ -170,7 +163,16 @@ func parseAndValidate(target any, data []byte) error {
 	ptrInstance := reflect.New(ptrType).Interface()
 
 	if err := json.Unmarshal(data, &ptrInstance); err != nil {
-		return fmt.Errorf("failed to unmarshal JSON: %w", err)
+		return nil, fmt.Errorf("failed to unmarshal JSON: %w", err)
+	}
+
+	return ptrInstance, nil
+}
+
+func parseAndValidate(target interface{}, data []byte) error {
+	ptrInstance, err := parse(target, data)
+	if err != nil {
+		return fmt.Errorf("failed to parse data: %w", err)
 	}
 
 	if err := validate.Struct(ptrInstance); err != nil {
