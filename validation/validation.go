@@ -55,6 +55,8 @@ func createPointerStruct(src interface{}) reflect.Type {
 		t = vt.Type()
 	}
 
+	// TODO: Add required tag on non ptr values
+
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
 		switch field.Type.Kind() {
@@ -137,18 +139,39 @@ func copyStruct(src interface{}, dst interface{}) error {
 
 	dt := dv.Type()
 
-	log.Debug().Interface("dv", dv).Interface("dt", dt).Send()
+	log.Debug().Str("dv", dv.String()).Str("dt", dt.String()).Send()
 
 	for i := range dt.NumField() {
 		f := dt.Field(i)
 
 		sf := sv.FieldByName(f.Name)
+		sfIsPtr := sf.Kind() == reflect.Ptr
+
 		df := dv.FieldByName(f.Name)
+		dfIsPtr := df.Kind() == reflect.Ptr
 
 		sVal := sf.Elem()
-		log.Debug().Interface("field", f).Interface("sval", sVal).Msg("field")
+		if sfIsPtr && sf.IsNil() && !dfIsPtr {
+			return fmt.Errorf("can't set nil value to non ptr field: %s", f.Name)
+		}
+
+		log.Debug().
+			Interface("field", f).
+			Interface("sfType", sf.Type().String()).
+			Interface("sfIsPtr", sfIsPtr).
+			Interface("sfIsNil", sf.IsNil()).
+			Interface("dfType", df.Type().String()).
+			Interface("dfIsPtr", dfIsPtr).
+			Interface("sVal", sVal.String()).
+			Interface("sValIsNil", sVal.IsNil()).
+			Msg("field")
 
 		df.Set(sVal)
+		// if dfIsPtr {
+		//     df.Elem().Set(sVal)
+		// } else {
+		//     df.Set(sVal)
+		// }
 	}
 
 	return nil

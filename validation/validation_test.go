@@ -119,8 +119,22 @@ func TestCopyStruct(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+// func TestCopyStructPointers(t *testing.T) {
+//     src := PT{
+//         I: ptr(42),
+//         S: ptr("str"),
+//         B: ptr(true),
+//     }
+// 
+//     var dst PT
+// 
+//     err := copyStruct(&src, &dst)
+// 
+//     assert.Equal(t, src, dst)
+//     assert.NoError(t, err)
+// }
+
 func TestCopyStruct_Errors(t *testing.T) {
-	require.Fail(t, "Not ready")
 	src := PT{
 		I: nil,
 		S: ptr("str"),
