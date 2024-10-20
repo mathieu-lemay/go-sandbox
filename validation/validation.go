@@ -1,4 +1,4 @@
-package main
+package validation
 
 import (
 	"encoding/json"
@@ -9,6 +9,7 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"github.com/go-playground/validator/v10"
+
 	"go-sandbox/logging"
 )
 
@@ -26,10 +27,10 @@ var validate = validator.New(validator.WithRequiredStructEnabled())
 
 func main() {
 	logging.ConfigureLogger(
-	//logging.WithLevel(logging.LevelDebug),
+	// logging.WithLevel(logging.LevelDebug),
 	)
 
-	//jsonData := []byte(`{"name": "John Smith", "age": 0}`)
+	// jsonData := []byte(`{"name": "John Smith", "age": 0}`)
 	jsonData := []byte(`{"name": "John"}`)
 	var person Person
 	if err := parseAndValidate(&person, jsonData); err != nil {
@@ -137,11 +138,11 @@ func copyStruct(src interface{}, dst interface{}) error {
 		dv = dv.Elem()
 	}
 
-	dt := dv.Type()
+	dt := reflect.TypeOf(dst).Elem()
 
 	log.Debug().Str("dv", dv.String()).Str("dt", dt.String()).Send()
 
-	for i := range dt.NumField() {
+	for i := range dv.NumField() {
 		f := dt.Field(i)
 
 		sf := sv.FieldByName(f.Name)
@@ -163,7 +164,6 @@ func copyStruct(src interface{}, dst interface{}) error {
 			Interface("dfType", df.Type().String()).
 			Interface("dfIsPtr", dfIsPtr).
 			Interface("sVal", sVal.String()).
-			Interface("sValIsNil", sVal.IsNil()).
 			Msg("field")
 
 		df.Set(sVal)
@@ -203,7 +203,7 @@ func parseAndValidate(target interface{}, data []byte) error {
 	}
 
 	// Fill the original struct with validated values
-	copyStruct(ptrInstance, &target)
+	copyStruct(&ptrInstance, &target)
 
 	return nil
 }

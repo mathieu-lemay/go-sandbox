@@ -1,14 +1,15 @@
-package main
+package validation
 
 import (
 	"encoding/json"
-	"github.com/rs/zerolog"
-	"go-sandbox/logging"
 	"testing"
+
+	"github.com/rs/zerolog"
+
+	"go-sandbox/logging"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -125,11 +126,11 @@ func TestCopyStruct(t *testing.T) {
 //         S: ptr("str"),
 //         B: ptr(true),
 //     }
-// 
+//
 //     var dst PT
-// 
+//
 //     err := copyStruct(&src, &dst)
-// 
+//
 //     assert.Equal(t, src, dst)
 //     assert.NoError(t, err)
 // }
@@ -145,18 +146,10 @@ func TestCopyStruct_Errors(t *testing.T) {
 
 	err := copyStruct(&src, &dst)
 
-	expected := T{
-		I: 42,
-		S: "str",
-		B: true,
-	}
-
-	assert.Equal(t, expected, dst)
-	assert.NoError(t, err)
+	assert.ErrorContains(t, err, "can't set nil value to non ptr field: I")
 }
 
 func TestParseAndValidateOptionalValues(t *testing.T) {
-	require.Fail(t, "Not ready")
 	testCases := []struct {
 		msg      string
 		data     string
