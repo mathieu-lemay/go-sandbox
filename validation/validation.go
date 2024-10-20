@@ -33,7 +33,7 @@ func main() {
 	// jsonData := []byte(`{"name": "John Smith", "age": 0}`)
 	jsonData := []byte(`{"name": "John"}`)
 	var person Person
-	if err := parseAndValidate(&person, jsonData); err != nil {
+	if err := parseAndValidate(jsonData, &person); err != nil {
 		log.Fatal().Err(err).Msg("Failed to validate struct")
 	}
 }
@@ -138,9 +138,9 @@ func copyStruct(src interface{}, dst interface{}) error {
 		dv = dv.Elem()
 	}
 
-	dt := reflect.TypeOf(dst).Elem()
+	dt := dv.Type()
 
-	log.Debug().Str("dv", dv.String()).Str("dt", dt.String()).Send()
+	log.Debug().Str("dvKind", dv.Kind().String()).Str("dt", dt.String()).Send()
 
 	for i := range dv.NumField() {
 		f := dt.Field(i)
@@ -151,9 +151,12 @@ func copyStruct(src interface{}, dst interface{}) error {
 		df := dv.FieldByName(f.Name)
 		dfIsPtr := df.Kind() == reflect.Ptr
 
-		sVal := sf.Elem()
-		if sfIsPtr && sf.IsNil() && !dfIsPtr {
-			return fmt.Errorf("can't set nil value to non ptr field: %s", f.Name)
+		sVal := sf
+		if !dfIsPtr {
+			if sf.IsNil() {
+				return fmt.Errorf("can't set nil value to non ptr field: %s", f.Name)
+			}
+			sVal = sf.Elem()
 		}
 
 		log.Debug().
@@ -167,17 +170,12 @@ func copyStruct(src interface{}, dst interface{}) error {
 			Msg("field")
 
 		df.Set(sVal)
-		// if dfIsPtr {
-		//     df.Elem().Set(sVal)
-		// } else {
-		//     df.Set(sVal)
-		// }
 	}
 
 	return nil
 }
 
-func parse(target interface{}, data []byte) (interface{}, error) {
+func parse(data []byte, target interface{}) (interface{}, error) {
 	// Create copy of the given type, but with all fields as pointers
 	ptrType := createPointerStruct(target)
 
@@ -192,18 +190,17 @@ func parse(target interface{}, data []byte) (interface{}, error) {
 	return ptrInstance, nil
 }
 
-func parseAndValidate(target interface{}, data []byte) error {
-	ptrInstance, err := parse(target, data)
+func parseAndValidate(data []byte, target interface{}) error {
+	ptrInstance, err := parse(data, target)
 	if err != nil {
 		return fmt.Errorf("failed to parse data: %w", err)
 	}
 
-	if err := validate.Struct(ptrInstance); err != nil {
+	err = validate.Struct(ptrInstance)
+	if err != nil {
 		return fmt.Errorf("invalid data: %w", err)
 	}
 
 	// Fill the original struct with validated values
-	copyStruct(&ptrInstance, &target)
-
-	return nil
+	return copyStruct(ptrInstance, target)
 }
