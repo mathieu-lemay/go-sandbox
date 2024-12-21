@@ -1,6 +1,8 @@
 package betteriter
 
 import (
+	"fmt"
+	"math"
 	"testing"
 
 	"github.com/jaswdr/faker/v2"
@@ -10,10 +12,10 @@ import (
 
 var fake = faker.New()
 
-func TestNewRepeat_ReturnsAnInfiniteIterator(t *testing.T) {
+func TestRepeat_ReturnsAnInfiniteIterator(t *testing.T) {
 	val := 4 // Random value chosen by a fair dice roll
 
-	repeat := NewRepeat(val)
+	repeat := Repeat(val)
 
 	c := 0
 
@@ -22,17 +24,17 @@ func TestNewRepeat_ReturnsAnInfiniteIterator(t *testing.T) {
 		c += 1
 
 		// Let's stop right there
-		if c == 10_000 {
+		if c == 1_000 {
 			break
 		}
 	}
 }
 
-func TestNewRepeatN_ReturnsAnInteratorOfNValues(t *testing.T) {
+func TestRepeatN_ReturnsAnInteratorOfNValues(t *testing.T) {
 	val := 4 // Random value chosen by a fair dice roll
 	n := fake.IntBetween(1, 10_000)
 
-	repeat := NewRepeatN(val, n)
+	repeat := RepeatN(val, n)
 
 	c := 0
 
@@ -49,13 +51,110 @@ func TestNewRepeatN_ReturnsAnInteratorOfNValues(t *testing.T) {
 	assert.Equal(t, n, c)
 }
 
-func TestNewRepeatN_ReturnsNothingIfNIsZero(t *testing.T) {
+func TestRepeatN_ReturnsNothingIfNIsZeroOrNegative(t *testing.T) {
 	val := 4 // Random value chosen by a fair dice roll
 
-	repeat := NewRepeatN(val, 0)
+	for n := range []int{0, -1, -2, math.MinInt} {
+		t.Run(fmt.Sprintf("n=%d", n), func(t *testing.T) {
+			repeat := RepeatN(val, 0)
 
-	for range repeat.it {
-		require.Fail(t, "The iterator returned something")
+			for range repeat.it {
+				require.Fail(t, "The iterator returned something")
+			}
+		})
+	}
+}
+
+func TestIncr_ReturnsAnIteratorThatIncreasesInValue(t *testing.T) {
+	c := 0
+
+	incr := Incr()
+
+	for i := range incr.it {
+		require.Equal(t, c, i)
+
+		c += 1
+		if c == 1_000 {
+			break
+		}
+	}
+}
+
+func TestIncrN_ReturnsAnIteratorThatIncreasesByNInValue(t *testing.T) {
+	c := 0
+	n := fake.IntBetween(1, 10)
+
+	incr := IncrN(n)
+
+	for i := range incr.it {
+		require.Equal(t, c*n, i)
+
+		c += 1
+		if c == 1_000 {
+			break
+		}
+	}
+}
+
+func TestIncrFrom_ReturnsAnIteratorThatIncreasesInValueFromStart(t *testing.T) {
+	for start := range []int{-100, -1, 0, 1, 100} {
+		t.Run(fmt.Sprintf("start=%d", start), func(t *testing.T) {
+			c := 0
+			incr := IncrFrom(start)
+
+			for i := range incr.it {
+				require.Equal(t, start+c, i)
+
+				c += 1
+				if c == 1_000 {
+					break
+				}
+			}
+		})
+	}
+}
+
+func TestIncrNFrom_ReturnsAnIteratorThatIncreasesInValueFromStart(t *testing.T) {
+	n := fake.IntBetween(1, 10)
+
+	for start := range []int{-100, -1, 0, 1, 100} {
+		t.Run(fmt.Sprintf("start=%d", start), func(t *testing.T) {
+			c := 0
+			incr := IncrNFrom(start, n)
+
+			for i := range incr.it {
+				require.Equal(t, start+c*n, i)
+
+				c += 1
+				if c == 1_000 {
+					break
+				}
+			}
+		})
+	}
+}
+
+func TestRange_ReturnsAnIteratorThatIncreasesInValueFromStartToEnd(t *testing.T) {
+	start := fake.IntBetween(0, 10)
+	end := fake.IntBetween(100, 1000)
+
+	c := 0
+	rangeIter := Range(start, end)
+
+	for i := range rangeIter.it {
+		require.Equal(t, start+c, i)
+
+		c += 1
+
+		if i >= end {
+			require.Fail(
+				t,
+				"Range iter didn't stop at end value",
+				"Expected end value: %d: current_value: %d",
+				end,
+				i,
+			)
+		}
 	}
 }
 

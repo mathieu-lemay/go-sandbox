@@ -10,13 +10,10 @@ type Iterator[T any] struct {
 	err error
 }
 
-type Tuple[T any, U any] struct {
-	A T
-	B U
-}
+// CLOSERS
 
-// TODO: make this a functions?
-func (i Iterator[T]) Collect() ([]T, error) {
+// TODO: make them a functions?
+func (i *Iterator[T]) Collect() ([]T, error) {
 	output := make([]T, 0)
 
 	for v, err := range i.it {
@@ -29,8 +26,13 @@ func (i Iterator[T]) Collect() ([]T, error) {
 	return output, nil
 }
 
-func New[T any](values []T) Iterator[T] {
-	return Iterator[T]{
+type Tuple[T any, U any] struct {
+	A T
+	B U
+}
+
+func New[T any](values []T) *Iterator[T] {
+	return &Iterator[T]{
 		it: func(yield func(T, error) bool) {
 			for _, v := range values {
 				if !yield(v, nil) {
@@ -41,8 +43,8 @@ func New[T any](values []T) Iterator[T] {
 	}
 }
 
-func NewRepeat[T any](v T) Iterator[T] {
-	return Iterator[T]{
+func Repeat[T any](v T) *Iterator[T] {
+	return &Iterator[T]{
 		it: func(yield func(T, error) bool) {
 			for {
 				if !yield(v, nil) {
@@ -53,8 +55,8 @@ func NewRepeat[T any](v T) Iterator[T] {
 	}
 }
 
-func NewRepeatN[T any](v T, n int) Iterator[T] {
-	return Iterator[T]{
+func RepeatN[T any](v T, n int) *Iterator[T] {
+	return &Iterator[T]{
 		it: func(yield func(T, error) bool) {
 			for i := 0; i < n; i++ {
 				if !yield(v, nil) {
@@ -65,8 +67,68 @@ func NewRepeatN[T any](v T, n int) Iterator[T] {
 	}
 }
 
-func Zip[T any, U any](a []T, b []U) Iterator[Tuple[T, U]] {
-	return Iterator[Tuple[T, U]]{
+func Incr() *Iterator[int] {
+	return &Iterator[int]{
+		it: func(yield func(int, error) bool) {
+			for i := 0; ; i++ {
+				if !yield(i, nil) {
+					return
+				}
+			}
+		},
+	}
+}
+
+func IncrN(n int) *Iterator[int] {
+	return &Iterator[int]{
+		it: func(yield func(int, error) bool) {
+			for i := 0; ; i += n {
+				if !yield(i, nil) {
+					return
+				}
+			}
+		},
+	}
+}
+
+func IncrFrom(start int) *Iterator[int] {
+	return &Iterator[int]{
+		it: func(yield func(int, error) bool) {
+			for i := start; ; i++ {
+				if !yield(i, nil) {
+					return
+				}
+			}
+		},
+	}
+}
+
+func IncrNFrom(start int, n int) *Iterator[int] {
+	return &Iterator[int]{
+		it: func(yield func(int, error) bool) {
+			for i := start; ; i += n {
+				if !yield(i, nil) {
+					return
+				}
+			}
+		},
+	}
+}
+
+func Range(start int, end int) *Iterator[int] {
+	return &Iterator[int]{
+		it: func(yield func(int, error) bool) {
+			for i := start; i < end; i++ {
+				if !yield(i, nil) {
+					return
+				}
+			}
+		},
+	}
+}
+
+func Zip[T any, U any](a []T, b []U) *Iterator[Tuple[T, U]] {
+	return &Iterator[Tuple[T, U]]{
 		it: func(yield func(Tuple[T, U], error) bool) {
 			for idx := range a {
 				if idx >= len(b) {
@@ -83,8 +145,8 @@ func Zip[T any, U any](a []T, b []U) Iterator[Tuple[T, U]] {
 	}
 }
 
-func ZipEq[T any, U any](a []T, b []U) Iterator[Tuple[T, U]] {
-	return Iterator[Tuple[T, U]]{
+func ZipEq[T any, U any](a []T, b []U) *Iterator[Tuple[T, U]] {
+	return &Iterator[Tuple[T, U]]{
 		it: func(yield func(Tuple[T, U], error) bool) {
 			if len(a) != len(b) {
 				yield(Tuple[T, U]{}, errors.New("slices are not the same length"))
