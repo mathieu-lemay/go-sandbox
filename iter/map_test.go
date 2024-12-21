@@ -60,3 +60,28 @@ func TestMap_StopsOnError(t *testing.T) {
 	assert.Empty(t, output)
 	assert.ErrorContains(t, err, "Invalid value")
 }
+
+func TestMap_PropagatesError(t *testing.T) {
+	iter := &Iterator[int]{
+		it: func(yield func(int, error) bool) {
+			if !yield(1, nil) {
+				return
+			}
+			if !yield(0, errors.New("some error")) {
+				return
+			}
+			require.Fail(t, "Should not reach this point")
+		},
+	}
+
+	mapper := func(i int) (int, error) {
+		// We should only be called with value = 1
+		assert.Equal(t, 1, i, "Mapper was called with unexpected value: %d", i)
+
+		return i, nil
+	}
+
+	output, err := Map(iter, mapper).Collect()
+	assert.Empty(t, output)
+	assert.ErrorContains(t, err, "some error")
+}
