@@ -18,10 +18,17 @@ func ConfigureLogger(opts ...LogConfig) error {
 	zerolog.SetGlobalLevel(config.Level)
 
 	logger := log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	logger = logger.Hook(&FileNameHook{})
 
 	log.Logger = logger
 
 	return nil
+}
+
+type FileNameHook struct{}
+
+func (_ *FileNameHook) Run(e *zerolog.Event, level zerolog.Level, message string) {
+	e = e.Caller(3)
 }
 
 type ConfigureLoggerOptions struct {
