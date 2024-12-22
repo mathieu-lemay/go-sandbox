@@ -127,6 +127,49 @@ func Range(start int, end int) *Iterator[int] {
 	}
 }
 
+func Cycle[T any](values []T) *Iterator[*T] {
+	return &Iterator[*T]{
+		it: func(yield func(*T, error) bool) {
+			for {
+				for i := range values {
+					if !yield(&values[i], nil) {
+						return
+					}
+				}
+			}
+		},
+	}
+}
+
+func Chain[T any](slices ...[]T) *Iterator[*T] {
+	return &Iterator[*T]{
+		it: func(yield func(*T, error) bool) {
+			for _, s := range slices {
+				for i := range s {
+					if !yield(&s[i], nil) {
+						return
+					}
+				}
+			}
+		},
+	}
+}
+
+func Product[T any, U any](p []T, q []U) *Iterator[*Tuple[*T, *U]] {
+	return &Iterator[*Tuple[*T, *U]]{
+		it: func(yield func(*Tuple[*T, *U], error) bool) {
+			for i := range p {
+				for j := range q {
+					t := Tuple[*T, *U]{&p[i], &q[j]}
+					if !yield(&t, nil) {
+						return
+					}
+				}
+			}
+		},
+	}
+}
+
 func Zip[T any, U any](a []T, b []U) *Iterator[Tuple[T, U]] {
 	return &Iterator[Tuple[T, U]]{
 		it: func(yield func(Tuple[T, U], error) bool) {

@@ -182,6 +182,57 @@ func TestRange_ReturnsAnIteratorThatIncreasesInValueFromStartToEnd(t *testing.T)
 	}
 }
 
+func TestCycle_IteratesOverMultipleSlices(t *testing.T) {
+	sl1 := []int{0, 1, 2}
+	sl2 := []int{5, 4, 3}
+	sl3 := []int{7, 8, 6}
+
+	expected := []int{0, 1, 2, 5, 4, 3, 7, 8, 6}
+
+	idx := 0
+
+	for v := range Chain(sl1, sl2, sl3).it {
+		require.Equal(t, &expected[idx], v)
+
+		idx += 1
+	}
+
+	// Make sure we covered all expected values
+	assert.Len(t, expected, idx)
+}
+
+func TestProduct_ReturnsTheCartesianProductOfTwoIterables(t *testing.T) {
+	p := []string{"A", "B", "C", "D"}
+	q := []int{0, 1, 2}
+
+	expected := []Tuple[string, int]{
+		{"A", 0},
+		{"A", 1},
+		{"A", 2},
+		{"B", 0},
+		{"B", 1},
+		{"B", 2},
+		{"C", 0},
+		{"C", 1},
+		{"C", 2},
+		{"D", 0},
+		{"D", 1},
+		{"D", 2},
+	}
+
+	idx := 0
+
+	for v := range Product(p, q).it {
+		require.Equal(t, expected[idx].A, *v.A)
+		require.Equal(t, expected[idx].B, *v.B)
+
+		idx += 1
+	}
+
+	// Make sure we covered all expected values
+	assert.Len(t, expected, idx)
+}
+
 func TestZip_ReturnsValuesFromTwoSlices(t *testing.T) {
 	iterA := []int{1, 2, 3, 4, 5}
 	iterB := []string{"one", "two", "three", "four", "five"}
