@@ -31,11 +31,11 @@ type Tuple[T any, U any] struct {
 	B U
 }
 
-func New[T any](values []T) *Iterator[T] {
-	return &Iterator[T]{
-		it: func(yield func(T, error) bool) {
-			for _, v := range values {
-				if !yield(v, nil) {
+func New[T any](values []T) *Iterator[*T] {
+	return &Iterator[*T]{
+		it: func(yield func(*T, error) bool) {
+			for i := range values {
+				if !yield(&values[i], nil) {
 					return
 				}
 			}

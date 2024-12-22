@@ -14,7 +14,7 @@ func TestFold_AppliesTheFolderFunctionOnAllValues(t *testing.T) {
 
 	iter := New(values)
 
-	res1, err := Fold(iter, 0, func(cur, v int) int { return cur + v })
+	res1, err := Fold(iter, 0, func(cur int, v *int) int { return cur + *v })
 	require.NoError(t, err)
 
 	assert.Equal(t, 15, res1)
@@ -22,7 +22,7 @@ func TestFold_AppliesTheFolderFunctionOnAllValues(t *testing.T) {
 	res2, err := Fold(
 		iter,
 		"result: ",
-		func(cur string, v int) string { return cur + strconv.Itoa(v) },
+		func(cur string, v *int) string { return cur + strconv.Itoa(*v) },
 	)
 	require.NoError(t, err)
 
@@ -85,12 +85,14 @@ func TestStringJoin_JoinsAllValuesInOneString(t *testing.T) {
 }
 
 func TestStringJoin_PropagatesError(t *testing.T) {
-	iter := &Iterator[string]{
-		it: func(yield func(string, error) bool) {
-			if !yield("a", nil) {
+	iter := &Iterator[*string]{
+		it: func(yield func(*string, error) bool) {
+			s := "a"
+			if !yield(&s, nil) {
 				return
 			}
-			if !yield("b", errors.New("some error")) {
+			s = "b"
+			if !yield(&s, errors.New("some error")) {
 				return
 			}
 			require.Fail(t, "Should not reach this point")

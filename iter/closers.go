@@ -18,7 +18,7 @@ func Fold[T any, U any](iter *Iterator[T], init U, adder func(cur U, item T) U) 
 	return current, nil
 }
 
-func StringJoin(iter *Iterator[string], s string) (string, error) {
+func StringJoin(iter *Iterator[*string], s string) (string, error) {
 	first := true
 	sb := strings.Builder{}
 
@@ -33,7 +33,7 @@ func StringJoin(iter *Iterator[string], s string) (string, error) {
 			first = false
 		}
 
-		sb.WriteString(v)
+		sb.WriteString(*v)
 	}
 
 	return sb.String(), nil

@@ -12,6 +12,30 @@ import (
 
 var fake = faker.New()
 
+func ptr[T any](v T) *T { return &v }
+
+func TestNew_ReturnsAnIteratorOverTheValues(t *testing.T) {
+	values := []int{1, 2, 3, 4, 5}
+	iter := New(values)
+
+	idx := 0
+	for v := range iter.it {
+		assert.Equal(t, &values[idx], v)
+		idx += 1
+	}
+}
+
+func TestNew_DoesntAllocate(t *testing.T) {
+	values := []int{1, 2, 3, 4, 5}
+	iter := New(values)
+
+	idx := 0
+	for v := range iter.it {
+		assert.True(t, &values[idx] == v, "%p != %p", &values[idx], v)
+		idx += 1
+	}
+}
+
 func TestRepeat_ReturnsAnInfiniteIterator(t *testing.T) {
 	val := 4 // Random value chosen by a fair dice roll
 
