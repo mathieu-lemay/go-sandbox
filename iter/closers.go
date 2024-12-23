@@ -4,6 +4,18 @@ import (
 	"strings"
 )
 
+func Any[T any](iter *Iterator[T]) (bool, error) {
+	for _, err := range iter.it {
+		if err != nil {
+			return false, err
+		}
+
+		return true, nil
+	}
+
+	return false, nil
+}
+
 func Fold[T any, U any](iter *Iterator[T], init U, adder func(cur U, item T) U) (U, error) {
 	current := init
 

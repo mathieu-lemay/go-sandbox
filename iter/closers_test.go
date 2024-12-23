@@ -9,6 +9,61 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestAny_ReturnsTrueIfIteratorHasAtLeastOneElement(t *testing.T) {
+	// Empty slice doesn't have any values
+	output, err := Any(New([]int{}))
+	require.NoError(t, err)
+	assert.False(t, output)
+
+	// A slice with only a zero value still has a value
+	output, err = Any(New([]int{0}))
+	require.NoError(t, err)
+	assert.True(t, output)
+
+	// A slice with only a nil pointer still has a value
+	output, err = Any(New([]*int{nil}))
+	require.NoError(t, err)
+	assert.True(t, output)
+
+	// A slice with many values...
+	output, err = Any(New([]int{1, 2, 3, 4, 5}))
+	require.NoError(t, err)
+	assert.True(t, output)
+}
+
+func TestAny_StopsAtTheFirstElement(t *testing.T) {
+	iter := &Iterator[int]{
+		it: func(yield func(int, error) bool) {
+			if !yield(1, nil) {
+				return
+			}
+			require.Fail(t, "Should not reach this point")
+			if !yield(42, errors.New("some error")) {
+				return
+			}
+		},
+	}
+
+	output, err := Any(iter)
+	assert.NoError(t, err)
+	assert.True(t, output)
+}
+
+func TestAny_PropagatesError(t *testing.T) {
+	iter := &Iterator[int]{
+		it: func(yield func(int, error) bool) {
+			if !yield(42, errors.New("some error")) {
+				return
+			}
+			require.Fail(t, "Should not reach this point")
+		},
+	}
+
+	output, err := Any(iter)
+	assert.ErrorContains(t, err, "some error")
+	assert.False(t, output)
+}
+
 func TestFold_AppliesTheFolderFunctionOnAllValues(t *testing.T) {
 	values := []int{1, 2, 3, 4, 5}
 
