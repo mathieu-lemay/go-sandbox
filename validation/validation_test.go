@@ -7,10 +7,9 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/require"
 
-	"go-sandbox/logging"
-
 	"github.com/go-playground/validator/v10"
 	"github.com/jaswdr/faker/v2"
+	"github.com/mathieu-lemay/go-sandbox/logging"
 	"github.com/stretchr/testify/assert"
 )
 

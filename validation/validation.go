@@ -6,11 +6,9 @@ import (
 	"reflect"
 	"unsafe"
 
-	"github.com/rs/zerolog/log"
-
 	"github.com/go-playground/validator/v10"
-
-	"go-sandbox/logging"
+	"github.com/mathieu-lemay/go-sandbox/logging"
+	"github.com/rs/zerolog/log"
 )
 
 type Animal struct {

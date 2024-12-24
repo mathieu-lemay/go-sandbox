@@ -1,4 +1,4 @@
-module go-sandbox
+module github.com/mathieu-lemay/go-sandbox
 
 go 1.23.2
 
