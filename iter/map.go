@@ -1,8 +1,8 @@
 package betteriter
 
-func Map[T any, U any](iterator *Iterator[T], f func(T) (U, error)) *Iterator[*U] {
+func (i *Iterator[T, U]) Map(f func(T) (U, error)) *Iterator[*U, U] {
 	it := func(yield func(*U, error) bool) {
-		for v, err := range iterator.it {
+		for v, err := range i.it {
 			if err != nil {
 				yield(nil, err)
 				return
@@ -15,5 +15,5 @@ func Map[T any, U any](iterator *Iterator[T], f func(T) (U, error)) *Iterator[*U
 		}
 	}
 
-	return &Iterator[*U]{it}
+	return &Iterator[*U, U]{it}
 }

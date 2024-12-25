@@ -11,13 +11,13 @@ import (
 
 func TestMap_TransformsElements(t *testing.T) {
 	values := []int{1, 2, 3}
-	iter := New(values)
+	iter := New2[int, string](values)
 
 	mapper := func(i *int) (string, error) {
 		return strconv.Itoa(*i * *i), nil
 	}
 
-	output, err := Map(iter, mapper).Collect()
+	output, err := iter.Map(mapper).Collect()
 
 	require.NoError(t, err)
 
@@ -34,7 +34,7 @@ func TestMap_IsLazy(t *testing.T) {
 		return *i, nil
 	}
 
-	for v := range Map(iter, mapper).it {
+	for v := range iter.Map(mapper).it {
 		if *v == 2 {
 			break
 		}
@@ -56,13 +56,13 @@ func TestMap_StopsOnError(t *testing.T) {
 		return *i, nil
 	}
 
-	output, err := Map(iter, mapper).Collect()
+	output, err := iter.Map(mapper).Collect()
 	assert.Empty(t, output)
 	assert.ErrorContains(t, err, "Invalid value")
 }
 
 func TestMap_PropagatesError(t *testing.T) {
-	iter := &Iterator[int]{
+	iter := &Iterator[int, int]{
 		it: func(yield func(int, error) bool) {
 			if !yield(1, nil) {
 				return
@@ -81,7 +81,7 @@ func TestMap_PropagatesError(t *testing.T) {
 		return i, nil
 	}
 
-	output, err := Map(iter, mapper).Collect()
+	output, err := iter.Map(mapper).Collect()
 	assert.Empty(t, output)
 	assert.ErrorContains(t, err, "some error")
 }
