@@ -46,43 +46,6 @@ func TestCollect_PropagatesError(t *testing.T) {
 	assert.Empty(t, output)
 }
 
-// func TestCopied_CopiedsTheIterInASlice(t *testing.T) {
-//     values := []int{1, 2, 3, 4, 5}
-//     output, err := Copied(New(values))
-//     require.NoError(t, err)
-//
-//     assert.Len(t, output, len(values))
-//
-//     for i, v := range output {
-//         assert.Equal(t, values[i], v)
-//
-//         // They should not point to the same value
-//         assert.False(t, &values[i] == &v)
-//     }
-// }
-//
-// func TestCopied_PropagatesError(t *testing.T) {
-//     iter := &Iterator[*int]{
-//         it: func(yield func(*int, error) bool) {
-//             if !yield(ptr(1), nil) {
-//                 return
-//             }
-//             if !yield(ptr(42), errors.New("some error")) {
-//                 return
-//             }
-//             require.Fail(t, "Should not reach this point")
-//             if !yield(ptr(2), nil) {
-//                 return
-//             }
-//         },
-//     }
-//
-//     output, err := Copied(iter)
-//     require.ErrorContains(t, err, "some error")
-//
-//     assert.Empty(t, output)
-// }
-
 func TestAny_ReturnsTrueOnFirstElementThatMatchesThePredicate(t *testing.T) {
 	predicate := func(*int) bool { return true }
 
@@ -207,7 +170,7 @@ func TestAll_PropagatesError(t *testing.T) {
 func TestFold_AppliesTheFolderFunctionOnAllValues(t *testing.T) {
 	values := []int{1, 2, 3, 4, 5}
 
-	iter := New(values)
+	iter := New2[int, int](values)
 
 	res1, err := iter.Fold(0, func(cur int, v *int) int { return cur + *v })
 	require.NoError(t, err)
@@ -241,4 +204,41 @@ func TestFold_PropagatesError(t *testing.T) {
 	assert.ErrorContains(t, err, "some error")
 	// folding should have stopped at 1
 	assert.Equal(t, 1, output)
+}
+
+func TestCopied_CopiesTheIterInASlice(t *testing.T) {
+	values := []int{1, 2, 3, 4, 5}
+	output, err := Copied(New(values))
+	require.NoError(t, err)
+
+	assert.Len(t, output, len(values))
+
+	for i, v := range output {
+		assert.Equal(t, values[i], v)
+
+		// They should not point to the same value
+		assert.False(t, &values[i] == &v)
+	}
+}
+
+func TestCopied_PropagatesError(t *testing.T) {
+	iter := &Iterator[*int, any]{
+		it: func(yield func(*int, error) bool) {
+			if !yield(ptr(1), nil) {
+				return
+			}
+			if !yield(ptr(42), errors.New("some error")) {
+				return
+			}
+			require.Fail(t, "Should not reach this point")
+			if !yield(ptr(2), nil) {
+				return
+			}
+		},
+	}
+
+	output, err := Copied(iter)
+	require.ErrorContains(t, err, "some error")
+
+	assert.Empty(t, output)
 }

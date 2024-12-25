@@ -54,3 +54,17 @@ func (i *Iterator[T, U]) Fold(init U, adder func(cur U, item T) U) (U, error) {
 
 	return current, nil
 }
+
+func Copied[T any, U any](i *Iterator[*T, U]) ([]T, error) {
+	output := make([]T, 0)
+
+	for v, err := range i.it {
+		if err != nil {
+			return nil, err
+		}
+		output = append(output, *v)
+	}
+
+	return output, nil
+}
+

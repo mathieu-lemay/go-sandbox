@@ -14,8 +14,8 @@ type Tuple[T any, U any] struct {
 	B U
 }
 
-func New[T any](values []T) *Iterator[*T, T] {
-	return &Iterator[*T, T]{
+func New[T any](values []T) *Iterator[*T, any] {
+	return &Iterator[*T, any]{
 		it: func(yield func(*T, error) bool) {
 			for i := range values {
 				if !yield(&values[i], nil) {
@@ -38,8 +38,20 @@ func New2[T any, U any](values []T) *Iterator[*T, U] {
 	}
 }
 
-func Repeat[T any](v T) *Iterator[T, T] {
-	return &Iterator[T, T]{
+func From[T any, U any] (source *Iterator[T, any]) *Iterator[T, U] {
+	return &Iterator[T, U]{
+		it: func(yield func(T, error) bool) {
+			for i, err := range source.it {
+				if !yield(i, err) {
+					return
+				}
+			}
+		},
+	}
+}
+
+func Repeat[T any](v T) *Iterator[T, any] {
+	return &Iterator[T, any]{
 		it: func(yield func(T, error) bool) {
 			for {
 				if !yield(v, nil) {
@@ -50,8 +62,8 @@ func Repeat[T any](v T) *Iterator[T, T] {
 	}
 }
 
-func RepeatN[T any](v T, n int) *Iterator[T, T] {
-	return &Iterator[T, T]{
+func RepeatN[T any](v T, n int) *Iterator[T, any] {
+	return &Iterator[T, any]{
 		it: func(yield func(T, error) bool) {
 			for i := 0; i < n; i++ {
 				if !yield(v, nil) {
@@ -62,8 +74,8 @@ func RepeatN[T any](v T, n int) *Iterator[T, T] {
 	}
 }
 
-func Incr() *Iterator[int, int] {
-	return &Iterator[int, int]{
+func Incr() *Iterator[int, any] {
+	return &Iterator[int, any]{
 		it: func(yield func(int, error) bool) {
 			for i := 0; ; i++ {
 				if !yield(i, nil) {
@@ -74,8 +86,8 @@ func Incr() *Iterator[int, int] {
 	}
 }
 
-func IncrN(n int) *Iterator[int, int] {
-	return &Iterator[int, int]{
+func IncrN(n int) *Iterator[int, any] {
+	return &Iterator[int, any]{
 		it: func(yield func(int, error) bool) {
 			for i := 0; ; i += n {
 				if !yield(i, nil) {
@@ -86,8 +98,8 @@ func IncrN(n int) *Iterator[int, int] {
 	}
 }
 
-func IncrFrom(start int) *Iterator[int, int] {
-	return &Iterator[int, int]{
+func IncrFrom(start int) *Iterator[int, any] {
+	return &Iterator[int, any]{
 		it: func(yield func(int, error) bool) {
 			for i := start; ; i++ {
 				if !yield(i, nil) {
@@ -98,8 +110,8 @@ func IncrFrom(start int) *Iterator[int, int] {
 	}
 }
 
-func IncrNFrom(start int, n int) *Iterator[int, int] {
-	return &Iterator[int, int]{
+func IncrNFrom(start int, n int) *Iterator[int, any] {
+	return &Iterator[int, any]{
 		it: func(yield func(int, error) bool) {
 			for i := start; ; i += n {
 				if !yield(i, nil) {
@@ -110,8 +122,8 @@ func IncrNFrom(start int, n int) *Iterator[int, int] {
 	}
 }
 
-func Range(start int, end int) *Iterator[int, int] {
-	return &Iterator[int, int]{
+func Range(start int, end int) *Iterator[int, any] {
+	return &Iterator[int, any]{
 		it: func(yield func(int, error) bool) {
 			for i := start; i < end; i++ {
 				if !yield(i, nil) {
@@ -122,8 +134,8 @@ func Range(start int, end int) *Iterator[int, int] {
 	}
 }
 
-func Cycle[T any](values []T) *Iterator[*T, *T] {
-	return &Iterator[*T, *T]{
+func Cycle[T any](values []T) *Iterator[*T, any] {
+	return &Iterator[*T, any]{
 		it: func(yield func(*T, error) bool) {
 			for {
 				for i := range values {
@@ -136,8 +148,8 @@ func Cycle[T any](values []T) *Iterator[*T, *T] {
 	}
 }
 
-func Chain[T any](slices ...[]T) *Iterator[*T, *T] {
-	return &Iterator[*T, *T]{
+func Chain[T any](slices ...[]T) *Iterator[*T, any] {
+	return &Iterator[*T, any]{
 		it: func(yield func(*T, error) bool) {
 			for _, s := range slices {
 				for i := range s {

@@ -2,6 +2,7 @@ package betteriter
 
 import (
 	"errors"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,26 +11,26 @@ import (
 
 func TestFilterMap_MapsAndFiltersElements(t *testing.T) {
 	values := []int{1, 2, 3, 4, 5}
-	iter := New(values)
+	iter := New2[int, string](values)
 
-	filterMap := func(i *int) (int, bool, error) {
+	filterMap := func(i *int) (string, bool, error) {
 		if *i%2 != 0 {
-			return 0, false, nil
+			return "", false, nil
 		}
 
-		return *i * *i, true, nil
+		return strconv.Itoa(*i * *i), true, nil
 	}
 
 	output, err := iter.FilterMap(filterMap).Collect()
 
 	require.NoError(t, err)
 
-	assert.Equal(t, []*int{ptr(4), ptr(16)}, output)
+	assert.Equal(t, []*string{ptr("4"), ptr("16")}, output)
 }
 
 func TestFilterMap_IsLazy(t *testing.T) {
 	values := []int{1, 2, 3}
-	iter := New(values)
+	iter := New2[int, int](values)
 
 	filterMap := func(i *int) (int, bool, error) {
 		assert.LessOrEqualf(t, *i, 2, "filter was called with unexpected value: %d", i)
@@ -46,7 +47,7 @@ func TestFilterMap_IsLazy(t *testing.T) {
 
 func TestFilterMap_StopsOnError(t *testing.T) {
 	values := []int{1, 2, 3}
-	iter := New(values)
+	iter := New2[int, int](values)
 
 	filterMap := func(i *int) (int, bool, error) {
 		assert.LessOrEqualf(t, *i, 2, "filter was called with unexpected value: %d", i)

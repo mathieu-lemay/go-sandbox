@@ -26,7 +26,7 @@ func TestMap_TransformsElements(t *testing.T) {
 
 func TestMap_IsLazy(t *testing.T) {
 	values := []int{1, 2, 3}
-	iter := New(values)
+	iter := New2[int, int](values)
 
 	mapper := func(i *int) (int, error) {
 		assert.LessOrEqualf(t, *i, 2, "Mapper was called with unexpected value: %d", i)
@@ -43,7 +43,7 @@ func TestMap_IsLazy(t *testing.T) {
 
 func TestMap_StopsOnError(t *testing.T) {
 	values := []int{1, 2, 3}
-	iter := New(values)
+	iter := New2[int, int](values)
 
 	mapper := func(i *int) (int, error) {
 		// We will error on value 2, so mapper should never be called with value 3

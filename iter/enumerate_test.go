@@ -26,7 +26,7 @@ func TestEnumerate_ReturnsValuesAndTheirIndex(t *testing.T) {
 
 func TestEnumerate_StopsOnError(t *testing.T) {
 	values := []int{1, 2, 3}
-	iter := New(values)
+	iter := New2[int, int](values)
 
 	mapper := func(i *int) (int, error) {
 		// We will error on value 2, so mapper should never be called with value 3
