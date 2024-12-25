@@ -5,10 +5,10 @@ type Enumerator[T any] struct {
 	Value T
 }
 
-func Enumerate[T any](iterator *Iterator[T]) *Iterator[Enumerator[T]] {
+func NewEnumeratorFrom[T any, U any](iter *Iterator[T, U]) *Iterator[Enumerator[T], U] {
 	it := func(yield func(Enumerator[T], error) bool) {
 		idx := 0
-		for v, err := range iterator.it {
+		for v, err := range iter.it {
 			enum := Enumerator[T]{idx, v}
 
 			if !yield(enum, err) || err != nil {
@@ -19,5 +19,5 @@ func Enumerate[T any](iterator *Iterator[T]) *Iterator[Enumerator[T]] {
 		}
 	}
 
-	return &Iterator[Enumerator[T]]{it}
+	return &Iterator[Enumerator[T], U]{it}
 }
