@@ -6,8 +6,7 @@ import (
 )
 
 type Iterator[T any] struct {
-	it  iter.Seq2[T, error]
-	err error
+	it iter.Seq2[T, error]
 }
 
 // CLOSERS
