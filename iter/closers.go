@@ -4,6 +4,32 @@ import (
 	"strings"
 )
 
+func Collect[T any](iter *Iterator[T]) ([]T, error) {
+	var output []T
+
+	for v, err := range iter.it {
+		if err != nil {
+			return nil, err
+		}
+		output = append(output, v)
+	}
+
+	return output, nil
+}
+
+func Copied[T any](iter *Iterator[*T]) ([]T, error) {
+	var output []T
+
+	for v, err := range iter.it {
+		if err != nil {
+			return nil, err
+		}
+		output = append(output, *v)
+	}
+
+	return output, nil
+}
+
 func Any[T any](iter *Iterator[T]) (bool, error) {
 	for _, err := range iter.it {
 		if err != nil {
