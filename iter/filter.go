@@ -14,5 +14,5 @@ func Filter[T any](iterator *Iterator[T], f func(T) bool) *Iterator[T] {
 		}
 	}
 
-	return &Iterator[T]{inner, nil}
+	return &Iterator[T]{inner}
 }

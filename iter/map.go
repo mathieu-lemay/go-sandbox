@@ -15,5 +15,5 @@ func Map[T any, U any](iterator *Iterator[T], f func(T) (U, error)) *Iterator[*U
 		}
 	}
 
-	return &Iterator[*U]{it, nil}
+	return &Iterator[*U]{it}
 }

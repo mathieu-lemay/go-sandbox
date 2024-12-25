@@ -17,5 +17,5 @@ func FilterMap[T any, U any](iterator *Iterator[T], f func(T) (U, bool, error)) 
 		}
 	}
 
-	return &Iterator[*U]{inner, nil}
+	return &Iterator[*U]{inner}
 }

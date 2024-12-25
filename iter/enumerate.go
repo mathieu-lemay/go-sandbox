@@ -19,5 +19,5 @@ func Enumerate[T any](iterator *Iterator[T]) *Iterator[Enumerator[T]] {
 		}
 	}
 
-	return &Iterator[Enumerator[T]]{it, nil}
+	return &Iterator[Enumerator[T]]{it}
 }
