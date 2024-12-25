@@ -21,11 +21,11 @@ func TestNew_ReturnsAnIteratorOverTheValues(t *testing.T) {
 
 	idx := 0
 	for v := range iter.it {
-		assert.Equal(t, &values[idx], v)
+		assert.Equal(t, values[idx], *v)
 		idx += 1
 	}
 
-	// The 2nd type of the iterator should be the same as the 1st one.
+	// The 2nd type of the iterator should be `any`.
 	// This code compiling is the test.
 	iter.Map(func(*int) (any, error) { return 0, nil})
 }
@@ -47,7 +47,7 @@ func TestNew2_ReturnsAnIteratorOverTheValuesWithADifferent2ndType(t *testing.T) 
 
 	idx := 0
 	for v := range iter.it {
-		assert.Equal(t, &values[idx], v)
+		assert.Equal(t, values[idx], *v)
 		idx += 1
 	}
 
@@ -63,6 +63,28 @@ func TestNew2_DoesntAllocate(t *testing.T) {
 	idx := 0
 	for v := range iter.it {
 		assert.True(t, &values[idx] == v, "%p != %p", &values[idx], v)
+		idx += 1
+	}
+}
+
+func TestReversed_ReturnsAnIteratorOverTheValuesInReverseOrder(t *testing.T) {
+	values := []int{1, 2, 3, 4, 5}
+	iter := Reversed(values)
+
+	idx := 0
+	for v := range iter.it {
+		assert.Equal(t, values[4-idx], *v)
+		idx += 1
+	}
+}
+
+func TestReversed_DoesntAllocate(t *testing.T) {
+	values := []int{1, 2, 3, 4, 5}
+	iter := Reversed(values)
+
+	idx := 0
+	for v := range iter.it {
+		assert.True(t, &values[4-idx] == v, "%p != %p", &values[4-idx], v)
 		idx += 1
 	}
 }

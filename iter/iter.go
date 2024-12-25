@@ -38,6 +38,19 @@ func New2[T any, U any](values []T) *Iterator[*T, U] {
 	}
 }
 
+func Reversed[T any](values []T) *Iterator[*T, any] {
+	return &Iterator[*T, any]{
+		it: func(yield func(*T, error) bool) {
+			n := len(values) - 1
+			for i := range values {
+				if !yield(&values[n-i], nil) {
+					return
+				}
+			}
+		},
+	}
+}
+
 func From[T any, U any] (source *Iterator[T, any]) *Iterator[T, U] {
 	return &Iterator[T, U]{
 		it: func(yield func(T, error) bool) {
