@@ -9,22 +9,6 @@ type Iterator[T any] struct {
 	it iter.Seq2[T, error]
 }
 
-// CLOSERS
-
-// TODO: make them a functions?
-func (i *Iterator[T]) Collect() ([]T, error) {
-	output := make([]T, 0)
-
-	for v, err := range i.it {
-		if err != nil {
-			return nil, err
-		}
-		output = append(output, v)
-	}
-
-	return output, nil
-}
-
 type Tuple[T any, U any] struct {
 	A T
 	B U
