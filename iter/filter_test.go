@@ -12,11 +12,11 @@ func TestFilter_FiltersElements(t *testing.T) {
 	values := []int{1, 2, 3, 4, 5}
 	iter := New(values)
 
-	filter := func(i *int) bool {
+	predicate := func(i *int) bool {
 		return *i%2 == 1
 	}
 
-	output, err := Filter(iter, filter).Collect()
+	output, err := iter.Filter(predicate).Collect()
 
 	require.NoError(t, err)
 
@@ -27,13 +27,13 @@ func TestFilter_IsLazy(t *testing.T) {
 	values := []int{1, 2, 3}
 	iter := New(values)
 
-	filter := func(i *int) bool {
+	predicate := func(i *int) bool {
 		assert.LessOrEqualf(t, *i, 2, "filter was called with unexpected value: %d", i)
 
 		return true
 	}
 
-	for v := range Filter(iter, filter).it {
+	for v := range iter.Filter(predicate).it {
 		if *v == 2 {
 			break
 		}
@@ -41,7 +41,7 @@ func TestFilter_IsLazy(t *testing.T) {
 }
 
 func TestFilter_PropagatesError(t *testing.T) {
-	iter := &Iterator[int]{
+	iter := &Iterator[int, any]{
 		it: func(yield func(int, error) bool) {
 			if !yield(1, nil) {
 				return
@@ -53,14 +53,14 @@ func TestFilter_PropagatesError(t *testing.T) {
 		},
 	}
 
-	filter := func(i int) bool {
+	predicate := func(i int) bool {
 		// We should only be called with value = 1
 		assert.Equal(t, 1, i, "Filter was called with unexpected value: %d", i)
 
 		return true
 	}
 
-	output, err := Filter(iter, filter).Collect()
+	output, err := iter.Filter(predicate).Collect()
 	assert.Empty(t, output)
 	assert.ErrorContains(t, err, "some error")
 }
@@ -85,8 +85,7 @@ func Benchmark_Filter(b *testing.B) {
 		(&values[i]).id = i
 	}
 
-	iter := New(values)
-	filter := Filter(iter, func(s *S) bool { return s.id%2 == 0 })
+	filter := New(values).Filter(func(s *S) bool { return s.id%2 == 0 })
 
 	b.ReportAllocs()
 
