@@ -150,8 +150,8 @@ func Chain[T any](slices ...[]T) *Iterator[*T, *T] {
 	}
 }
 
-func Product[T any, U any](p []T, q []U) *Iterator[*Tuple[*T, *U], T] {
-	return &Iterator[*Tuple[*T, *U], T]{
+func Product[T any, U any](p []T, q []U) *Iterator[*Tuple[*T, *U], any] {
+	return &Iterator[*Tuple[*T, *U], any]{
 		it: func(yield func(*Tuple[*T, *U], error) bool) {
 			for i := range p {
 				for j := range q {
@@ -165,8 +165,8 @@ func Product[T any, U any](p []T, q []U) *Iterator[*Tuple[*T, *U], T] {
 	}
 }
 
-func Zip[T any, U any](a []T, b []U) *Iterator[Tuple[T, U], T] {
-	return &Iterator[Tuple[T, U], T]{
+func Zip[T any, U any](a []T, b []U) *Iterator[Tuple[T, U], any] {
+	return &Iterator[Tuple[T, U], any]{
 		it: func(yield func(Tuple[T, U], error) bool) {
 			for idx := range a {
 				if idx >= len(b) {
@@ -183,8 +183,8 @@ func Zip[T any, U any](a []T, b []U) *Iterator[Tuple[T, U], T] {
 	}
 }
 
-func ZipEq[T any, U any](a []T, b []U) *Iterator[Tuple[T, U], T] {
-	return &Iterator[Tuple[T, U], T]{
+func ZipEq[T any, U any](a []T, b []U) *Iterator[Tuple[T, U], any] {
+	return &Iterator[Tuple[T, U], any]{
 		it: func(yield func(Tuple[T, U], error) bool) {
 			if len(a) != len(b) {
 				yield(Tuple[T, U]{}, errors.New("slices are not the same length"))

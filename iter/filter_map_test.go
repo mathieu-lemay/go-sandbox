@@ -20,7 +20,7 @@ func TestFilterMap_MapsAndFiltersElements(t *testing.T) {
 		return *i * *i, true, nil
 	}
 
-	output, err := FilterMap(iter, filterMap).Collect()
+	output, err := iter.FilterMap(filterMap).Collect()
 
 	require.NoError(t, err)
 
@@ -37,7 +37,7 @@ func TestFilterMap_IsLazy(t *testing.T) {
 		return *i, true, nil
 	}
 
-	for v := range FilterMap(iter, filterMap).it {
+	for v := range iter.FilterMap(filterMap).it {
 		if *v == 2 {
 			break
 		}
@@ -58,13 +58,13 @@ func TestFilterMap_StopsOnError(t *testing.T) {
 		return *i, true, nil
 	}
 
-	output, err := FilterMap(iter, filterMap).Collect()
+	output, err := iter.FilterMap(filterMap).Collect()
 	assert.Empty(t, output)
 	assert.ErrorContains(t, err, "Invalid value")
 }
 
 func TestFilterMap_PropagatesError(t *testing.T) {
-	iter := &Iterator[int]{
+	iter := &Iterator[int, int]{
 		it: func(yield func(int, error) bool) {
 			if !yield(1, nil) {
 				return
@@ -83,7 +83,7 @@ func TestFilterMap_PropagatesError(t *testing.T) {
 		return i, true, nil
 	}
 
-	output, err := FilterMap(iter, filterMap).Collect()
+	output, err := iter.FilterMap(filterMap).Collect()
 	assert.Empty(t, output)
 	assert.ErrorContains(t, err, "some error")
 }

@@ -1,8 +1,8 @@
 package betteriter
 
-func FilterMap[T any, U any](iterator *Iterator[T], f func(T) (U, bool, error)) *Iterator[*U] {
+func (i *Iterator[T, U]) FilterMap(f func(T) (U, bool, error)) *Iterator[*U, U] {
 	inner := func(yield func(*U, error) bool) {
-		for v, err := range iterator.it {
+		for v, err := range i.it {
 			if err != nil {
 				yield(nil, err)
 				return
@@ -17,5 +17,5 @@ func FilterMap[T any, U any](iterator *Iterator[T], f func(T) (U, bool, error)) 
 		}
 	}
 
-	return &Iterator[*U]{inner}
+	return &Iterator[*U, U]{inner}
 }
