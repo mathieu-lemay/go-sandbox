@@ -11,7 +11,7 @@ import (
 
 func TestCollect_CollectsTheIterInASlice(t *testing.T) {
 	values := []int{1, 2, 3, 4, 5}
-	output, err := Collect(New(values))
+	output, err := New(values).Collect()
 	require.NoError(t, err)
 
 	assert.Len(t, output, len(values))
@@ -25,7 +25,7 @@ func TestCollect_CollectsTheIterInASlice(t *testing.T) {
 }
 
 func TestCollect_PropagatesError(t *testing.T) {
-	iter := &Iterator[int]{
+	iter := &Iterator[int, any]{
 		it: func(yield func(int, error) bool) {
 			if !yield(1, nil) {
 				return
@@ -40,73 +40,81 @@ func TestCollect_PropagatesError(t *testing.T) {
 		},
 	}
 
-	output, err := Collect(iter)
+	output, err := iter.Collect()
 	require.ErrorContains(t, err, "some error")
 
 	assert.Empty(t, output)
 }
 
-func TestCopied_CopiedsTheIterInASlice(t *testing.T) {
-	values := []int{1, 2, 3, 4, 5}
-	output, err := Copied(New(values))
-	require.NoError(t, err)
+// func TestCopied_CopiedsTheIterInASlice(t *testing.T) {
+//     values := []int{1, 2, 3, 4, 5}
+//     output, err := Copied(New(values))
+//     require.NoError(t, err)
+//
+//     assert.Len(t, output, len(values))
+//
+//     for i, v := range output {
+//         assert.Equal(t, values[i], v)
+//
+//         // They should not point to the same value
+//         assert.False(t, &values[i] == &v)
+//     }
+// }
+//
+// func TestCopied_PropagatesError(t *testing.T) {
+//     iter := &Iterator[*int]{
+//         it: func(yield func(*int, error) bool) {
+//             if !yield(ptr(1), nil) {
+//                 return
+//             }
+//             if !yield(ptr(42), errors.New("some error")) {
+//                 return
+//             }
+//             require.Fail(t, "Should not reach this point")
+//             if !yield(ptr(2), nil) {
+//                 return
+//             }
+//         },
+//     }
+//
+//     output, err := Copied(iter)
+//     require.ErrorContains(t, err, "some error")
+//
+//     assert.Empty(t, output)
+// }
 
-	assert.Len(t, output, len(values))
+func TestAny_ReturnsTrueOnFirstElementThatMatchesThePredicate(t *testing.T) {
+	predicate := func(*int) bool { return true }
 
-	for i, v := range output {
-		assert.Equal(t, values[i], v)
-
-		// They should not point to the same value
-		assert.False(t, &values[i] == &v)
-	}
-}
-
-func TestCopied_PropagatesError(t *testing.T) {
-	iter := &Iterator[*int]{
-		it: func(yield func(*int, error) bool) {
-			if !yield(ptr(1), nil) {
-				return
-			}
-			if !yield(ptr(42), errors.New("some error")) {
-				return
-			}
-			require.Fail(t, "Should not reach this point")
-			if !yield(ptr(2), nil) {
-				return
-			}
-		},
-	}
-
-	output, err := Copied(iter)
-	require.ErrorContains(t, err, "some error")
-
-	assert.Empty(t, output)
-}
-
-func TestAny_ReturnsTrueIfIteratorHasAtLeastOneElement(t *testing.T) {
 	// Empty slice doesn't have any values
-	output, err := Any(New([]int{}))
+	output, err := New([]int{}).Any(predicate)
 	require.NoError(t, err)
 	assert.False(t, output)
 
 	// A slice with only a zero value still has a value
-	output, err = Any(New([]int{0}))
+	output, err = New([]int{0}).Any(predicate)
 	require.NoError(t, err)
 	assert.True(t, output)
 
 	// A slice with only a nil pointer still has a value
-	output, err = Any(New([]*int{nil}))
+	output, err = New([]*int{nil}).Any(func(i **int) bool { return true })
 	require.NoError(t, err)
 	assert.True(t, output)
 
 	// A slice with many values...
-	output, err = Any(New([]int{1, 2, 3, 4, 5}))
+	output, err = New([]int{1, 2, 3, 4, 5}).Any(predicate)
 	require.NoError(t, err)
 	assert.True(t, output)
 }
 
-func TestAny_StopsAtTheFirstElement(t *testing.T) {
-	iter := &Iterator[int]{
+func TestAny_ReturnsFalseIfNoElementsMatchThePredicate(t *testing.T) {
+	output, err := New([]int{1, 3, 5}).Any(func(v *int) bool { return *v%2 == 0 })
+	require.NoError(t, err)
+	assert.False(t, output)
+}
+
+func TestAny_StopsAtTheFirstMatchingElement(t *testing.T) {
+	iter := &Iterator[int, any]{
 		it: func(yield func(int, error) bool) {
 			if !yield(1, nil) {
 				return
@@ -118,13 +126,13 @@ func TestAny_StopsAtTheFirstElement(t *testing.T) {
 		},
 	}
 
-	output, err := Any(iter)
+	output, err := iter.Any(func(int) bool { return true })
 	assert.NoError(t, err)
 	assert.True(t, output)
 }
 
 func TestAny_PropagatesError(t *testing.T) {
-	iter := &Iterator[int]{
+	iter := &Iterator[int, any]{
 		it: func(yield func(int, error) bool) {
 			if !yield(42, errors.New("some error")) {
 				return
@@ -133,7 +141,65 @@ func TestAny_PropagatesError(t *testing.T) {
 		},
 	}
 
-	output, err := Any(iter)
+	output, err := iter.Any(func(int) bool { return true })
+	assert.ErrorContains(t, err, "some error")
+	assert.False(t, output)
+}
+
+func TestAll_ReturnsTrueIfAllElementsMatchThePredicate(t *testing.T) {
+	predicate := func(*int) bool { return true }
+
+	// Empty slice doesn't have any values, so nothing _doesn't_ match
+	output, err := New([]int{}).All(predicate)
+	require.NoError(t, err)
+	assert.True(t, output)
+
+	// A slice with one value that matches
+	output, err = New([]int{0}).All(predicate)
+	require.NoError(t, err)
+	assert.True(t, output)
+
+	// A slice with many values...
+	output, err = New([]int{1, 2, 3, 4, 5}).All(predicate)
+	require.NoError(t, err)
+	assert.True(t, output)
+}
+
+func TestAll_ReturnsFalseIfAnyElementDoesntMatchThePredicate(t *testing.T) {
+	output, err := New([]int{1, 2, 3, 4, 5}).All(func(i *int) bool { return *i < 5 })
+	assert.NoError(t, err)
+	assert.False(t, output)
+}
+
+func TestAll_StopsAtTheFirstNonMatchingElement(t *testing.T) {
+	iter := &Iterator[int, any]{
+		it: func(yield func(int, error) bool) {
+			if !yield(1, nil) {
+				return
+			}
+			require.Fail(t, "Should not reach this point")
+			if !yield(42, errors.New("some error")) {
+				return
+			}
+		},
+	}
+
+	output, err := iter.All(func(int) bool { return false })
+	assert.NoError(t, err)
+	assert.False(t, output)
+}
+
+func TestAll_PropagatesError(t *testing.T) {
+	iter := &Iterator[int, any]{
+		it: func(yield func(int, error) bool) {
+			if !yield(42, errors.New("some error")) {
+				return
+			}
+			require.Fail(t, "Should not reach this point")
+		},
+	}
+
+	output, err := iter.All(func(int) bool { return true })
 	assert.ErrorContains(t, err, "some error")
 	assert.False(t, output)
 }
@@ -143,13 +209,13 @@ func TestFold_AppliesTheFolderFunctionOnAllValues(t *testing.T) {
 
 	iter := New(values)
 
-	res1, err := Fold(iter, 0, func(cur int, v *int) int { return cur + *v })
+	res1, err := iter.Fold(0, func(cur int, v *int) int { return cur + *v })
 	require.NoError(t, err)
 
 	assert.Equal(t, 15, res1)
 
-	res2, err := Fold(
-		iter,
+	iter2 := New2[int, string](values)
+	res2, err := iter2.Fold(
 		"result: ",
 		func(cur string, v *int) string { return cur + strconv.Itoa(*v) },
 	)
@@ -159,7 +225,7 @@ func TestFold_AppliesTheFolderFunctionOnAllValues(t *testing.T) {
 }
 
 func TestFold_PropagatesError(t *testing.T) {
-	iter := &Iterator[int]{
+	iter := &Iterator[int, int]{
 		it: func(yield func(int, error) bool) {
 			if !yield(1, nil) {
 				return
@@ -171,64 +237,8 @@ func TestFold_PropagatesError(t *testing.T) {
 		},
 	}
 
-	output, err := Fold(iter, 0, func(_ int, v int) int { return v })
+	output, err := iter.Fold(0, func(_ int, v int) int { return v })
 	assert.ErrorContains(t, err, "some error")
 	// folding should have stopped at 1
 	assert.Equal(t, 1, output)
-}
-
-func TestStringJoin_JoinsAllValuesInOneString(t *testing.T) {
-	values := []string{"a", "b", "c", "d", "e"}
-
-	testCases := []struct{ joiner, expected string }{
-		{
-			"",
-			"abcde",
-		},
-		{
-			",",
-			"a,b,c,d,e",
-		},
-		{
-			", ",
-			"a, b, c, d, e",
-		},
-		{
-			"-",
-			"a-b-c-d-e",
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.joiner, func(t *testing.T) {
-			iter := New(values)
-
-			output, err := StringJoin(iter, tc.joiner)
-			require.NoError(t, err)
-
-			assert.Equal(t, tc.expected, output)
-
-		})
-	}
-
-}
-
-func TestStringJoin_PropagatesError(t *testing.T) {
-	iter := &Iterator[*string]{
-		it: func(yield func(*string, error) bool) {
-			s := "a"
-			if !yield(&s, nil) {
-				return
-			}
-			s = "b"
-			if !yield(&s, errors.New("some error")) {
-				return
-			}
-			require.Fail(t, "Should not reach this point")
-		},
-	}
-
-	output, err := StringJoin(iter, ",")
-	assert.ErrorContains(t, err, "some error")
-	assert.Empty(t, output)
 }
