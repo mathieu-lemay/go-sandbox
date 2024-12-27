@@ -46,6 +46,43 @@ func TestCollect_PropagatesError(t *testing.T) {
 	assert.Empty(t, output)
 }
 
+func TestReversed_CollectsTheIterInASliceInReverseOrder(t *testing.T) {
+	values := []int{1, 2, 3, 4, 5}
+	output, err := New(values).Reversed()
+	require.NoError(t, err)
+
+	assert.Len(t, output, len(values))
+
+	for i, v := range output {
+		assert.Equal(t, values[4-i], *v)
+
+		// They should point to the same value
+		assert.True(t, &values[4-i] == v)
+	}
+}
+
+func TestReversed_PropagatesError(t *testing.T) {
+	iter := &Iterator[int, any]{
+		it: func(yield func(int, error) bool) {
+			if !yield(1, nil) {
+				return
+			}
+			if !yield(42, errors.New("some error")) {
+				return
+			}
+			require.Fail(t, "Should not reach this point")
+			if !yield(2, nil) {
+				return
+			}
+		},
+	}
+
+	output, err := iter.Reversed()
+	require.ErrorContains(t, err, "some error")
+
+	assert.Empty(t, output)
+}
+
 func TestAny_ReturnsTrueOnFirstElementThatMatchesThePredicate(t *testing.T) {
 	predicate := func(*int) bool { return true }
 

@@ -13,6 +13,19 @@ func (i *Iterator[T, U]) Collect() ([]T, error) {
 	return output, nil
 }
 
+func (i *Iterator[T, U]) Reversed() ([]T, error) {
+	output := make([]T, 0)
+
+	for v, err := range i.it {
+		if err != nil {
+			return nil, err
+		}
+		output = append([]T{v}, output...)
+	}
+
+	return output, nil
+}
+
 func (i *Iterator[T, U]) Any(predicate func(T) bool) (bool, error) {
 	for v, err := range i.it {
 		if err != nil {
@@ -67,4 +80,3 @@ func Copied[T any, U any](i *Iterator[*T, U]) ([]T, error) {
 
 	return output, nil
 }
-

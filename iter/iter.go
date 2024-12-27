@@ -51,7 +51,7 @@ func Reversed[T any](values []T) *Iterator[*T, any] {
 	}
 }
 
-func From[T any, U any] (source *Iterator[T, any]) *Iterator[T, U] {
+func From[T any, U any](source *Iterator[T, any]) *Iterator[T, U] {
 	return &Iterator[T, U]{
 		it: func(yield func(T, error) bool) {
 			for i, err := range source.it {

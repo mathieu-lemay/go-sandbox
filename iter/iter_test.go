@@ -27,7 +27,7 @@ func TestNew_ReturnsAnIteratorOverTheValues(t *testing.T) {
 
 	// The 2nd type of the iterator should be `any`.
 	// This code compiling is the test.
-	iter.Map(func(*int) (any, error) { return 0, nil})
+	iter.Map(func(*int) (any, error) { return 0, nil })
 }
 
 func TestNew_DoesntAllocate(t *testing.T) {
@@ -53,7 +53,7 @@ func TestNew2_ReturnsAnIteratorOverTheValuesWithADifferent2ndType(t *testing.T) 
 
 	// The 2nd type of the iterator should be the specified one.
 	// This code compiling is the test.
-	iter.Map(func(*int) (string, error) { return "", nil})
+	iter.Map(func(*int) (string, error) { return "", nil })
 }
 
 func TestNew2_DoesntAllocate(t *testing.T) {

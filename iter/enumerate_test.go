@@ -12,7 +12,6 @@ func TestEnumerate_ReturnsValuesAndTheirIndex(t *testing.T) {
 	values := []string{"one", "two", "three"}
 	iter := New(values)
 
-
 	output, err := NewEnumeratorFrom(iter).Collect()
 	require.NoError(t, err)
 
