@@ -1,5 +1,7 @@
 package betteriter
 
+import "errors"
+
 func (i *Iterator[T, U]) Collect() ([]T, error) {
 	output := make([]T, 0)
 
@@ -52,6 +54,41 @@ func (i *Iterator[T, U]) All(predicate func(T) bool) (bool, error) {
 	}
 
 	return true, nil
+}
+
+func (i *Iterator[T, U]) First() (T, error) {
+	for v, err := range i.it {
+		if err != nil {
+			var t T
+			return t, err
+		}
+
+		return v, nil
+	}
+
+	var t T
+	return t, errors.New("empty iterator")
+}
+
+func (i *Iterator[T, U]) Last() (T, error) {
+	var t T
+	found := false
+
+	for v, err := range i.it {
+		found = true
+		if err != nil {
+			return t, err
+		}
+
+		t = v
+
+	}
+
+	if !found {
+		return t, errors.New("empty iterator")
+	}
+
+	return t, nil
 }
 
 func (i *Iterator[T, U]) Fold(init U, adder func(cur U, item T) U) (U, error) {

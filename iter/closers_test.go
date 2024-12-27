@@ -204,6 +204,70 @@ func TestAll_PropagatesError(t *testing.T) {
 	assert.False(t, output)
 }
 
+func TestFirst_ReturnsTheFirstElementOfTheIter(t *testing.T) {
+	val := 42
+
+	iter := &Iterator[int, any]{
+		it: func(yield func(int, error) bool) {
+			if !yield(val, nil) {
+				return
+			}
+			require.Fail(t, "Should not reach this point")
+		},
+	}
+	output, err := iter.First()
+	assert.NoError(t, err)
+	assert.Equal(t, val, output)
+}
+
+func TestFirst_ReturnsAnErrorIfIteratorIsEmpty(t *testing.T) {
+	output, err := New([]int{}).First()
+	assert.ErrorContains(t, err, "empty iterator")
+	assert.Nil(t, output)
+}
+
+func TestFirst_PropagatesError(t *testing.T) {
+	iter := &Iterator[int, any]{
+		it: func(yield func(int, error) bool) {
+			if !yield(42, errors.New("some error")) {
+				return
+			}
+			require.Fail(t, "Should not reach this point")
+		},
+	}
+
+	output, err := iter.First()
+	assert.ErrorContains(t, err, "some error")
+	assert.Zero(t, output)
+}
+
+func TestLast_ReturnsTheFirstElementOfTheIter(t *testing.T) {
+	output, err := New([]int{1, 2, 3, 4, 5}).Last()
+	assert.NoError(t, err)
+	assert.Equal(t, 5, *output)
+}
+
+func TestLast_ReturnsAnErrorIfIteratorIsEmpty(t *testing.T) {
+	output, err := New([]int{}).Last()
+	assert.ErrorContains(t, err, "empty iterator")
+	assert.Nil(t, output)
+}
+
+func TestLast_PropagatesError(t *testing.T) {
+	iter := &Iterator[int, any]{
+		it: func(yield func(int, error) bool) {
+			if !yield(42, errors.New("some error")) {
+				return
+			}
+			require.Fail(t, "Should not reach this point")
+		},
+	}
+
+	output, err := iter.Last()
+	assert.ErrorContains(t, err, "some error")
+	assert.Zero(t, output)
+}
+
 func TestFold_AppliesTheFolderFunctionOnAllValues(t *testing.T) {
 	values := []int{1, 2, 3, 4, 5}
 
