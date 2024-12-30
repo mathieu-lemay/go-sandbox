@@ -268,6 +268,86 @@ func TestLast_PropagatesError(t *testing.T) {
 	assert.Zero(t, output)
 }
 
+func TestFind_ReturnsTheFirstElementThatMatches(t *testing.T) {
+	values := []int{1, 2, 3, 4, 5}
+
+	output, ok, err := New(values).Find(func(v *int) bool { return *v%2 == 0 })
+	require.NoError(t, err)
+
+	require.True(t, ok)
+	require.NotNil(t, output)
+	assert.Equal(t, 2, *output)
+}
+
+func TestFind_ReturnsFalseIfNothingMatches(t *testing.T) {
+	values := []int{1, 2, 3, 4, 5}
+
+	output, ok, err := New(values).Find(func(v *int) bool { return *v > 10 })
+	require.NoError(t, err)
+
+	assert.False(t, ok)
+	assert.Zero(t, output)
+}
+
+func TestFind_PropagatesError(t *testing.T) {
+	iter := &Iterator[int, int]{
+		it: func(yield func(int, error) bool) {
+			if !yield(1, nil) {
+				return
+			}
+			if !yield(42, errors.New("some error")) {
+				return
+			}
+			require.Fail(t, "Should not reach this point")
+		},
+	}
+
+	output, ok, err := iter.Find(func(int) bool { return false })
+	assert.ErrorContains(t, err, "some error")
+	assert.False(t, ok)
+	assert.Zero(t, output)
+}
+
+func TestPosition_ReturnsThePositionOfTheFirstElementThatMatches(t *testing.T) {
+	values := []int{1, 2, 3, 4, 5}
+
+	output, ok, err := New(values).Position(func(v *int) bool { return *v >= 4 })
+	require.NoError(t, err)
+
+	require.True(t, ok)
+	require.NotNil(t, output)
+	assert.Equal(t, 3, output)
+}
+
+func TestPosition_ReturnsFalseIfNothingMatches(t *testing.T) {
+	values := []int{1, 2, 3, 4, 5}
+
+	output, ok, err := New(values).Position(func(v *int) bool { return *v > 10 })
+	require.NoError(t, err)
+
+	assert.False(t, ok)
+	assert.Zero(t, output)
+}
+
+func TestPosition_PropagatesError(t *testing.T) {
+	iter := &Iterator[int, int]{
+		it: func(yield func(int, error) bool) {
+			if !yield(1, nil) {
+				return
+			}
+			if !yield(42, errors.New("some error")) {
+				return
+			}
+			require.Fail(t, "Should not reach this point")
+		},
+	}
+
+	output, ok, err := iter.Position(func(int) bool { return false })
+	assert.ErrorContains(t, err, "some error")
+	assert.False(t, ok)
+	assert.Zero(t, output)
+}
+
 func TestFold_AppliesTheFolderFunctionOnAllValues(t *testing.T) {
 	values := []int{1, 2, 3, 4, 5}
 
