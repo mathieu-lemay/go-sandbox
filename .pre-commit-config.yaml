@@ -14,3 +14,19 @@ repos:
     hooks:
       - id: golines
         args: ["--no-reformat-tags"]
+
+  - repo: local
+    hooks:
+      - id: goimports-reviser
+        name: goimports-reviser
+        description: Right imports sorting & code formatting tool (goimports alternative)
+        language: golang
+        entry: goimports-reviser
+        args:
+          - "-format"
+          - "-company-prefixes"
+          - "github.com/mathieu-lemay/"
+          - "-use-cache"
+        types: [go]
+        additional_dependencies:
+          - "github.com/incu6us/goimports-reviser/v3@v3.8.2"
