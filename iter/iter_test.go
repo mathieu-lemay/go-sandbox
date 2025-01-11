@@ -252,7 +252,24 @@ func TestRange_ReturnsAnIteratorThatIncreasesInValueFromStartToEnd(t *testing.T)
 	}
 }
 
-func TestCycle_IteratesOverMultipleSlices(t *testing.T) {
+func TestCycle_IteratesOverTheSliceOverAndOverAgain(t *testing.T) {
+	sl := []int{0, 1, 2}
+
+	expected := []int{0, 1, 2, 0, 1, 2, 0, 1}
+
+	idx := 0
+
+	for v := range Cycle(sl).it {
+		require.Equal(t, &expected[idx], v)
+
+		idx += 1
+		if idx == len(expected) {
+			break
+		}
+	}
+}
+
+func TestChain_IteratesOverMultipleSlices(t *testing.T) {
 	sl1 := []int{0, 1, 2}
 	sl2 := []int{5, 4, 3}
 	sl3 := []int{7, 8, 6}
