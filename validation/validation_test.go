@@ -205,7 +205,7 @@ func TestParseAndValidateOptionalValues(t *testing.T) {
 
 	for _, tc := range testCases {
 		var st T
-		err := parseAndValidate([]byte(tc.data), &st)
+		err := parseAndValidate([]byte(tc.data), &st, defaultValidator)
 		if tc.isValid {
 			assert.NoError(t, err, tc.msg)
 			assert.Equal(t, *tc.expected, st, tc.msg)
@@ -216,6 +216,17 @@ func TestParseAndValidateOptionalValues(t *testing.T) {
 	}
 }
 
+func TestParseAndValidate_EnsuresNonPointerFieldsAreRequired(t *testing.T) {
+	type S struct {
+		Name string `validate:"required"`
+	}
+
+	var s S
+	err := parseAndValidate([]byte("{}"), &s, defaultValidator)
+
+	assert.ErrorAs(t, err, &validator.ValidationErrors{})
+}
+
 func BenchmarkReference(b *testing.B) {
 	_ = logging.ConfigureLogger(logging.WithLevel(zerolog.ErrorLevel))
 	data := []byte(`{"i": 45, "s": "some-str", "b": true}`)
@@ -224,17 +235,16 @@ func BenchmarkReference(b *testing.B) {
 		err := json.Unmarshal(data, &st)
 		assert.NoError(b, err)
 
-		err = validate.Struct(&st)
+		err = defaultValidator.Struct(&st)
 		assert.NoError(b, err)
 	}
 }
 
-func BenchmarkParseAndValidate(b *testing.B) {
+func BenchmarkDeserializer(b *testing.B) {
 	_ = logging.ConfigureLogger(logging.WithLevel(zerolog.ErrorLevel))
 	data := []byte(`{"i": 45, "s": "some-str", "b": true}`)
 	for i := 0; i < b.N; i++ {
-		var st T
-		err := parseAndValidate(data, &st)
+		_, err := Deserialize[T](data)
 		assert.NoError(b, err)
 	}
 }

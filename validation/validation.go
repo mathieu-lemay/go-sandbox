@@ -7,36 +7,40 @@ import (
 	"unsafe"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/mathieu-lemay/go-sandbox/logging"
 	"github.com/rs/zerolog/log"
 )
 
-type Animal struct {
-	Name string `json:"name" validate:"required"`
+var defaultValidator = validator.New(validator.WithRequiredStructEnabled())
+
+var structsCache = map[reflect.Type]reflect.Type{}
+
+type DeserializeOptions struct {
+	validate *validator.Validate
 }
 
-type Person struct {
-	Name     string  `json:"name" validate:"required"`
-	Nickname *string `json:"nickname" validate:"required"`
-	Age      int     `json:"age" validate:"required"`
-}
+type DeserializeOption func (*DeserializeOptions)
 
-var validate = validator.New(validator.WithRequiredStructEnabled())
-
-func main() {
-	logging.ConfigureLogger(
-	// logging.WithLevel(logging.LevelDebug),
-	)
-
-	// jsonData := []byte(`{"name": "John Smith", "age": 0}`)
-	jsonData := []byte(`{"name": "John"}`)
-	var person Person
-	if err := parseAndValidate(jsonData, &person); err != nil {
-		log.Fatal().Err(err).Msg("Failed to validate struct")
+func WithValidate(validate *validator.Validate) DeserializeOption {
+	return func(o *DeserializeOptions) {
+		o.validate = validate
 	}
 }
 
-var structsCache = map[reflect.Type]reflect.Type{}
+func Deserialize[T any](data []byte, opts ...DeserializeOption) (T, error) {
+	var t T
+
+	options := &DeserializeOptions{
+		validate: defaultValidator,
+	}
+
+	for _, opt := range opts {
+		opt(options)
+	}
+
+	err := parseAndValidate(data, &t, options.validate)
+
+	return t, err
+}
 
 func createPointerStruct(src interface{}) reflect.Type {
 	srcType := reflect.TypeOf(src)
@@ -54,7 +58,7 @@ func createPointerStruct(src interface{}) reflect.Type {
 		t = vt.Type()
 	}
 
-	// TODO: Add required tag on non ptr values
+	// TODO: Automatically add a `validate:"required"` tag on non-ptr fields
 
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
@@ -188,7 +192,7 @@ func parse(data []byte, target interface{}) (interface{}, error) {
 	return ptrInstance, nil
 }
 
-func parseAndValidate(data []byte, target interface{}) error {
+func parseAndValidate(data []byte, target interface{}, validate *validator.Validate) error {
 	ptrInstance, err := parse(data, target)
 	if err != nil {
 		return fmt.Errorf("failed to parse data: %w", err)
