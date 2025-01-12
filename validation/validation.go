@@ -71,6 +71,8 @@ func createPointerStruct(src interface{}) reflect.Type {
 				Tag:  field.Tag,
 			}
 			sfs = append(sfs, sf)
+		case reflect.Slice:
+			panic("Slices are not supported")
 		case reflect.Ptr:
 			sf := reflect.StructField{
 				Name: field.Name,

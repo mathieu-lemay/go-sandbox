@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	_    = logging.ConfigureLogger(logging.WithLevel(zerolog.DebugLevel))
+	_    = logging.ConfigureLogger(logging.WithLevel(zerolog.InfoLevel))
 	fake = faker.New()
 )
 
@@ -27,9 +27,303 @@ type T struct {
 }
 
 type PT struct {
-	I *int
-	S *string
-	B *bool
+	I *int    `json:"i" validate:"required"`
+	S *string `json:"s" validate:"required"`
+	B *bool   `json:"b" validate:"required"`
+}
+
+func TestDeserializeSimpleStruct(t *testing.T) {
+
+	testCases := []struct {
+		name     string
+		data     string
+		isValid  bool
+		expected *T
+	}{
+		{
+			"missing values",
+			`{}`,
+			false,
+			nil,
+		},
+		{
+			"null values",
+			`{
+				"i": null,
+				"s": null,
+				"b": null
+			}`,
+			false,
+			nil,
+		},
+		{
+			"zero values",
+			`{
+				"i": 0,
+				"s": "",
+				"b": false
+			}`,
+			true,
+			&T{I: 0, S: "", B: false},
+		},
+		{
+			"non-zero values",
+			`{
+				"i": 5,
+				"s": "string",
+				"b": true
+			}`,
+			true,
+			&T{I: 5, S: "string", B: true},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var st T
+			st, err := Deserialize[T]([]byte(tc.data))
+			if tc.isValid {
+				assert.NoError(t, err, tc.name)
+				assert.Equal(t, *tc.expected, st, tc.name)
+			} else {
+				assert.Error(t, err, tc.name)
+				assert.ErrorAs(t, err, &validator.ValidationErrors{}, tc.name)
+			}
+		})
+	}
+}
+
+func TestDeserializeStructWithPointerFields(t *testing.T) {
+	testCases := []struct {
+		name     string
+		data     string
+		isValid  bool
+		expected *PT
+	}{
+		{
+			"missing values",
+			`{}`,
+			false,
+			nil,
+		},
+		{
+			"null values",
+			`{
+				"i": null,
+				"s": null,
+				"b": null
+			}`,
+			false,
+			nil,
+		},
+		{
+			"zero values",
+			`{
+				"i": 0,
+				"s": "",
+				"b": false
+			}`,
+			true,
+			&PT{I: ptr(0), S: ptr(""), B: ptr(false)},
+		},
+		{
+			"non-zero values",
+			`{
+				"i": 5,
+				"s": "string",
+				"b": true
+			}`,
+			true,
+			&PT{I: ptr(5), S: ptr("string"), B: ptr(true)},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			st, err := Deserialize[PT]([]byte(tc.data))
+			if tc.isValid {
+				assert.NoError(t, err, tc.name)
+				assert.Equal(t, *tc.expected, st, tc.name)
+			} else {
+				assert.Error(t, err, tc.name)
+				assert.ErrorAs(t, err, &validator.ValidationErrors{}, tc.name)
+			}
+		})
+	}
+}
+
+func TestDeserializeStructWithComplexFields(t *testing.T) {
+	type T struct {
+		I int `json:"i" validate:"required"`
+	}
+
+	type S struct {
+		T T `json:"t" validate:"required"`
+	}
+
+	testCases := []struct {
+		name     string
+		data     string
+		isValid  bool
+		expected *S
+	}{
+		{
+			"missing value",
+			`{}`,
+			false,
+			nil,
+		},
+		{
+			"null value",
+			`{
+				"t": null
+			}`,
+			false,
+			nil,
+		},
+		{
+			"missing sub value",
+			`{
+				"t": {
+					"i": null
+				}
+			}`,
+			false,
+			nil,
+		},
+		{
+			"zero sub value",
+			`{
+				"t": {
+					"i": 0
+				}
+			}`,
+			true,
+			&S{T: T{I: 0}},
+		},
+		{
+			"non zero sub value",
+			`{
+				"t": {
+					"i": 5
+				}
+			}`,
+			true,
+			&S{T: T{I: 5}},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			st, err := Deserialize[S]([]byte(tc.data))
+			if tc.isValid {
+				require.NoError(t, err, tc.name)
+				assert.Equal(t, *tc.expected, st, tc.name)
+			} else {
+				require.Error(t, err, tc.name)
+				assert.ErrorAs(t, err, &validator.ValidationErrors{}, tc.name)
+			}
+		})
+	}
+}
+
+func TestDeserializeStructSliceField(t *testing.T) {
+	type T struct {
+		I int `json:"i" validate:"required"`
+	}
+
+	type S struct {
+		Ts []T `json:"ts" validate:"required,dive"`
+	}
+
+	testCases := []struct {
+		name     string
+		data     string
+		isValid  bool
+		expected *S
+	}{
+		{
+			"missing value",
+			`{}`,
+			false,
+			nil,
+		},
+		{
+			"null value",
+			`{
+				"t": null
+			}`,
+			false,
+			nil,
+		},
+		{
+			"missing sub value",
+			`{
+				"t": [
+					{
+						"i": null
+					}
+				]
+			}`,
+			false,
+			nil,
+		},
+		{
+			"zero sub value",
+			`{
+				"t": [
+					{
+						"i": 0
+					}
+				]
+			}`,
+			true,
+			&S{
+				Ts: []T{
+					{I: 0},
+				},
+			},
+		},
+		{
+			"non zero sub value",
+			`{
+				"t": [
+					{
+						"i": 5
+					}
+				]
+			}`,
+			true,
+			&S{
+				Ts: []T{
+					{I: 5},
+				},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			st, err := Deserialize[S]([]byte(tc.data))
+			if tc.isValid {
+				require.NoError(t, err, tc.name)
+				assert.Equal(t, *tc.expected, st, tc.name)
+			} else {
+				require.Error(t, err, tc.name)
+				assert.ErrorAs(t, err, &validator.ValidationErrors{}, tc.name)
+			}
+		})
+	}
+}
+
+func TestDeserialize_EnsuresNonPointerFieldsAreRequired(t *testing.T) {
+	type S struct {
+		Name string `validate:"required"`
+	}
+
+	_, err := Deserialize[S]([]byte("{}"))
+
+	assert.ErrorAs(t, err, &validator.ValidationErrors{})
 }
 
 func TestParse(t *testing.T) {
@@ -156,75 +450,6 @@ func TestCopyStruct_Errors(t *testing.T) {
 	err := copyStruct(&src, &dst)
 
 	assert.ErrorContains(t, err, "can't set nil value to non ptr field: I")
-}
-
-func TestParseAndValidateOptionalValues(t *testing.T) {
-	testCases := []struct {
-		msg      string
-		data     string
-		isValid  bool
-		expected *T
-	}{
-		{
-			"missing values",
-			`{}`,
-			false,
-			nil,
-		},
-		{
-			"null values",
-			`{
-				"i": null,
-				"s": null,
-				"b": null
-			}`,
-			false,
-			nil,
-		},
-		{
-			"zero values",
-			`{
-				"i": 0,
-				"s": "",
-				"b": false
-			}`,
-			true,
-			&T{I: 0, S: "", B: false},
-		},
-		{
-			"non-zero values",
-			`{
-				"i": 5,
-				"s": "string",
-				"b": true
-			}`,
-			true,
-			&T{I: 5, S: "string", B: true},
-		},
-	}
-
-	for _, tc := range testCases {
-		var st T
-		err := parseAndValidate([]byte(tc.data), &st, defaultValidator)
-		if tc.isValid {
-			assert.NoError(t, err, tc.msg)
-			assert.Equal(t, *tc.expected, st, tc.msg)
-		} else {
-			assert.Error(t, err, tc.msg)
-			assert.ErrorAs(t, err, &validator.ValidationErrors{}, tc.msg)
-		}
-	}
-}
-
-func TestParseAndValidate_EnsuresNonPointerFieldsAreRequired(t *testing.T) {
-	type S struct {
-		Name string `validate:"required"`
-	}
-
-	var s S
-	err := parseAndValidate([]byte("{}"), &s, defaultValidator)
-
-	assert.ErrorAs(t, err, &validator.ValidationErrors{})
 }
 
 func BenchmarkReference(b *testing.B) {
