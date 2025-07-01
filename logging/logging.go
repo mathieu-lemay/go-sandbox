@@ -1,9 +1,11 @@
 package logging
 
 import (
+	"os"
+	"time"
+
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"os"
 )
 
 func ConfigureLogger(opts ...LogConfig) error {
@@ -16,6 +18,17 @@ func ConfigureLogger(opts ...LogConfig) error {
 	}
 
 	zerolog.SetGlobalLevel(config.Level)
+
+	zerolog.FormattedLevels[zerolog.TraceLevel] = "TRACE  "
+	zerolog.FormattedLevels[zerolog.DebugLevel] = "DEBUG  "
+	zerolog.FormattedLevels[zerolog.InfoLevel] = "INFO   "
+	zerolog.FormattedLevels[zerolog.WarnLevel] = "WARNING"
+	zerolog.FormattedLevels[zerolog.ErrorLevel] = "ERROR  "
+	zerolog.FormattedLevels[zerolog.FatalLevel] = "FATAL  "
+	zerolog.FormattedLevels[zerolog.PanicLevel] = "PANIC  "
+
+	zerolog.TimeFieldFormat = time.RFC3339Nano
+	zerolog.TimestampFieldName = "timestamp"
 
 	logger := log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	logger = logger.Hook(&FileNameHook{})
