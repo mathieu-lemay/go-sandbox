@@ -121,7 +121,7 @@ func TestMapOr_ReturnsTheMappedValueOrDefault(t *testing.T) {
 	})
 }
 
-func TestMapOrElse_TheMappedValueOrCallsDefaultFactory(t *testing.T) {
+func TestMapOrElse_ReturnsTheMappedValueOrCallsDefaultFactory(t *testing.T) {
 	t.Run("some", func(t *testing.T) {
 		val := fake.Int()
 		s := Some(val)
@@ -152,5 +152,50 @@ func TestMapOrElse_TheMappedValueOrCallsDefaultFactory(t *testing.T) {
 		}
 
 		assert.Equal(t, def, MapOrElse(n, factory, mapper))
+	})
+}
+
+func TestAnd_ReturnsOtherOrNone(t *testing.T) {
+	t.Run("some", func(t *testing.T) {
+		val := fake.Int()
+		s := Some(val)
+
+		other := Some(fake.RandomStringWithLength(8))
+
+		assert.Equal(t, other, And(s, other))
+	})
+
+	t.Run("none", func(t *testing.T) {
+		n := None()
+
+		other := Some(fake.RandomStringWithLength(8))
+
+		assert.Equal(t, none[string]{}, And(n, other))
+	})
+}
+
+func TestAndThen_ReturnsMappedOrNone(t *testing.T) {
+	t.Run("some", func(t *testing.T) {
+		val := fake.Int()
+		s := Some(val)
+
+		other := Some(fake.RandomStringWithLength(8))
+		f := func(o int) Option[string] {
+			assert.Equal(t, val, o)
+			return other
+		}
+
+		assert.Equal(t, other, AndThen(s, f))
+	})
+
+	t.Run("none", func(t *testing.T) {
+		n := None()
+
+		f := func(o any) Option[string] {
+			assert.Fail(t, "mapper should not have been called")
+			return none[string]{}
+		}
+
+		assert.Equal(t, none[string]{}, AndThen(n, f))
 	})
 }

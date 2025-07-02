@@ -1,9 +1,11 @@
 package option
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
+	"github.com/mathieu-lemay/go-sandbox/safetypes/result"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -138,4 +140,74 @@ func TestSome_Inspect(t *testing.T) {
 
 	assert.Equal(t, s, s.Inspect(f))
 	assert.True(t, called, "predicate should have been called")
+}
+
+func TestSome_OkOr(t *testing.T) {
+	value := fake.Int()
+	s := Some(value)
+
+	expected := result.Ok(value)
+
+	assert.Equal(t, expected, s.OkOr(errors.New(fake.RandomStringWithLength(8))))
+}
+
+func TestSome_OkOrElse(t *testing.T) {
+	value := fake.Int()
+	s := Some(value)
+
+	f := func() error {
+		assert.Fail(t, "should not be called")
+		return errors.New(fake.RandomStringWithLength(8))
+	}
+
+	expected := result.Ok(value)
+
+	assert.Equal(t, expected, s.OkOrElse(f))
+}
+
+func TestSome_Filter(t *testing.T) {
+	value := fake.Int()
+	s := Some(value)
+
+	for _, res := range []bool{true, false} {
+		name := fmt.Sprintf("predicate returns %v", res)
+		t.Run(name, func(t *testing.T) {
+			called := false
+			f := func(v int) bool {
+				called = true
+
+				assert.Equal(t, value, v)
+
+				return res
+			}
+
+			if res {
+				assert.Equal(t, s, s.Filter(f))
+			} else {
+				assert.Equal(t, none[int]{}, s.Filter(f))
+			}
+			assert.True(t, called, "predicate should have been called")
+		})
+	}
+}
+
+func TestSome_Or(t *testing.T) {
+	value := fake.Int()
+	s := Some(value)
+
+	other := Some(fake.Int())
+
+	assert.Equal(t, s, s.Or(other))
+}
+
+func TestSome_OrElse(t *testing.T) {
+	value := fake.Int()
+	s := Some(value)
+
+	f := func() Option[int] {
+		assert.Fail(t, "should not be called")
+		return Some(fake.Int())
+	}
+
+	assert.Equal(t, s, s.OrElse(f))
 }

@@ -1,9 +1,11 @@
 package option
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
+	"github.com/mathieu-lemay/go-sandbox/safetypes/result"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -118,4 +120,85 @@ func TestNone_Inspect(t *testing.T) {
 	}
 
 	assert.Equal(t, n, n.Inspect(f))
+}
+
+func TestNone_OkOr(t *testing.T) {
+	n := None()
+
+	err := errors.New(fake.RandomStringWithLength(8))
+
+	expected := result.Err(err)
+
+	assert.Equal(t, expected, n.OkOr(err))
+}
+
+func TestNone_OkOrElse(t *testing.T) {
+	n := None()
+
+	err := errors.New(fake.RandomStringWithLength(8))
+	f := func() error {
+		return err
+	}
+
+	expected := result.Err(err)
+
+	assert.Equal(t, expected, n.OkOrElse(f))
+}
+
+func TestNone_Filter(t *testing.T) {
+	n := None()
+
+	for _, res := range []bool{true, false} {
+		name := fmt.Sprintf("predicate returns %v", res)
+		t.Run(name, func(t *testing.T) {
+			f := func(_ any) bool {
+				// The predicate should _not_ be called, there's just no point in doing so.
+				assert.Fail(t, "predicate should not have been called")
+
+				return res
+			}
+
+			assert.Equal(t, n, n.Filter(f))
+		})
+	}
+}
+
+func TestNone_Or(t *testing.T) {
+	n := none[int]{}
+
+	t.Run("other is some", func(t *testing.T) {
+		other := Some(fake.Int())
+
+		assert.Equal(t, other, n.Or(other))
+	})
+
+	t.Run("other is none", func(t *testing.T) {
+		other := none[int]{}
+
+		assert.Equal(t, other, n.Or(other))
+	})
+}
+
+func TestNone_OrElse(t *testing.T) {
+	n := none[int]{}
+
+	t.Run("other is some", func(t *testing.T) {
+		other := Some(fake.Int())
+
+		f := func() Option[int] {
+			return other
+		}
+
+		assert.Equal(t, other, n.OrElse(f))
+	})
+
+	t.Run("other is none", func(t *testing.T) {
+		other := none[int]{}
+
+		f := func() Option[int] {
+			return other
+		}
+
+		assert.Equal(t, other, n.OrElse(f))
+	})
 }

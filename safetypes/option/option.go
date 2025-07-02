@@ -3,6 +3,8 @@ package option
 
 import (
 	"reflect"
+
+	"github.com/mathieu-lemay/go-sandbox/safetypes/result"
 )
 
 type Option[T any] interface {
@@ -16,6 +18,11 @@ type Option[T any] interface {
 	UnwrapOrElse(f func() T) T
 	UnwrapOrDefault() T
 	Inspect(f func(T)) Option[T]
+	OkOr(error) result.Result[T]
+	OkOrElse(func() error) result.Result[T]
+	Filter(f func(T) bool) Option[T]
+	Or(other Option[T]) Option[T]
+	OrElse(f func() Option[T]) Option[T]
 }
 
 func From[T comparable](val T) Option[T] {
@@ -48,6 +55,24 @@ func MapOrElse[T any, U any](opt Option[T], factory func() U, f func(T) U) U {
 	s, ok := opt.(some[T])
 	if !ok {
 		return factory()
+	}
+
+	return f(s.val)
+}
+
+func And[T any, U any](opt Option[T], other Option[U]) Option[U] {
+	_, ok := opt.(some[T])
+	if !ok {
+		return none[U]{}
+	}
+
+	return other
+}
+
+func AndThen[T any, U any](opt Option[T], f func(T) Option[U]) Option[U] {
+	s, ok := opt.(some[T])
+	if !ok {
+		return none[U]{}
 	}
 
 	return f(s.val)

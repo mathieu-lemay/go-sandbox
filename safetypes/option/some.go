@@ -1,5 +1,7 @@
 package option
 
+import "github.com/mathieu-lemay/go-sandbox/safetypes/result"
+
 var (
 	_ Option[any] = some[any]{}
 )
@@ -52,5 +54,29 @@ func (s some[T]) UnwrapOrDefault() T {
 
 func (s some[T]) Inspect(f func(T)) Option[T] {
 	f(s.val)
+	return s
+}
+
+func (s some[T]) OkOr(_ error) result.Result[T] {
+	return result.Ok(s.val)
+}
+
+func (s some[T]) OkOrElse(_ func() error) result.Result[T] {
+	return result.Ok(s.val)
+}
+
+func (s some[T]) Filter(f func(T) bool) Option[T] {
+	if f(s.val) {
+		return s
+	} else {
+		return none[T]{}
+	}
+}
+
+func (s some[T]) Or(_ Option[T]) Option[T] {
+	return s
+}
+
+func (s some[T]) OrElse(_ func() Option[T]) Option[T] {
 	return s
 }
