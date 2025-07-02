@@ -2,6 +2,7 @@ package option
 
 import (
 	"math/rand"
+	"strconv"
 	"testing"
 	"time"
 
@@ -63,5 +64,93 @@ func TestFrom_ReturnsNewOptionFromArgs(t *testing.T) {
 
 		res6 := From((*string)(nil))
 		assert.True(t, res6.IsNone())
+	})
+}
+
+func TestMap_ReturnsANewOptionWithMappedValue(t *testing.T) {
+	t.Run("some", func(t *testing.T) {
+		val := fake.Int()
+		s := Some(val)
+
+		f := func(v int) string {
+			return strconv.Itoa(v)
+		}
+
+		expected := Some(strconv.Itoa(val))
+
+		assert.Equal(t, expected, Map(s, f))
+	})
+
+	t.Run("none", func(t *testing.T) {
+		n := None()
+
+		f := func(any) int {
+			assert.Fail(t, "mapper should not have been called")
+			return 0
+		}
+
+		assert.Equal(t, none[int]{}, Map(n, f))
+	})
+}
+
+func TestMapOr_ReturnsTheMappedValueOrDefault(t *testing.T) {
+	t.Run("some", func(t *testing.T) {
+		val := fake.Int()
+		s := Some(val)
+
+		def := fake.RandomStringWithLength(9)
+		f := func(v int) string {
+			return strconv.Itoa(v)
+		}
+
+		expected := strconv.Itoa(val)
+
+		assert.Equal(t, expected, MapOr(s, def, f))
+	})
+
+	t.Run("none", func(t *testing.T) {
+		n := None()
+
+		def := fake.RandomStringWithLength(9)
+		f := func(any) string {
+			assert.Fail(t, "mapper should not have been called")
+			return ""
+		}
+
+		assert.Equal(t, def, MapOr(n, def, f))
+	})
+}
+
+func TestMapOrElse_TheMappedValueOrCallsDefaultFactory(t *testing.T) {
+	t.Run("some", func(t *testing.T) {
+		val := fake.Int()
+		s := Some(val)
+
+		mapper := func(v int) string {
+			return strconv.Itoa(v)
+		}
+		factory := func() string {
+			assert.Fail(t, "factory should not have been called")
+			return fake.RandomStringWithLength(9)
+		}
+
+		expected := strconv.Itoa(val)
+
+		assert.Equal(t, expected, MapOrElse(s, factory, mapper))
+	})
+
+	t.Run("none", func(t *testing.T) {
+		n := None()
+
+		mapper := func(any) string {
+			assert.Fail(t, "mapper should not have been called")
+			return ""
+		}
+		def := fake.RandomStringWithLength(9)
+		factory := func() string {
+			return def
+		}
+
+		assert.Equal(t, def, MapOrElse(n, factory, mapper))
 	})
 }

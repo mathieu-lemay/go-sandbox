@@ -125,3 +125,17 @@ func TestSome_UnwrapOrDefault(t *testing.T) {
 	assert.Equal(t, valInt, Some(valInt).UnwrapOrDefault())
 	assert.Equal(t, valFloat, Some(valFloat).UnwrapOrDefault())
 }
+
+func TestSome_Inspect(t *testing.T) {
+	value := fake.Int()
+	s := Some(value)
+
+	called := false
+	f := func(v int) {
+		called = true
+		assert.Equal(t, value, v)
+	}
+
+	assert.Equal(t, s, s.Inspect(f))
+	assert.True(t, called, "predicate should have been called")
+}

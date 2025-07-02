@@ -15,6 +15,7 @@ type Option[T any] interface {
 	UnwrapOr(def T) T
 	UnwrapOrElse(f func() T) T
 	UnwrapOrDefault() T
+	Inspect(f func(T)) Option[T]
 }
 
 func From[T comparable](val T) Option[T] {
@@ -23,4 +24,31 @@ func From[T comparable](val T) Option[T] {
 	}
 
 	return Some(val)
+}
+
+func Map[T any, U any](opt Option[T], f func(T) U) Option[U] {
+	s, ok := opt.(some[T])
+	if !ok {
+		return none[U]{}
+	}
+
+	return Some(f(s.val))
+}
+
+func MapOr[T any, U any](opt Option[T], def U, f func(T) U) U {
+	s, ok := opt.(some[T])
+	if !ok {
+		return def
+	}
+
+	return f(s.val)
+}
+
+func MapOrElse[T any, U any](opt Option[T], factory func() U, f func(T) U) U {
+	s, ok := opt.(some[T])
+	if !ok {
+		return factory()
+	}
+
+	return f(s.val)
 }

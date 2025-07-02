@@ -49,3 +49,8 @@ func (s some[T]) UnwrapOrElse(_ func() T) T {
 func (s some[T]) UnwrapOrDefault() T {
 	return s.val
 }
+
+func (s some[T]) Inspect(f func(T)) Option[T] {
+	f(s.val)
+	return s
+}

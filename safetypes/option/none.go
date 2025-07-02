@@ -48,3 +48,7 @@ func (n none[T]) UnwrapOrDefault() T {
 	var v T
 	return v
 }
+
+func (n none[T]) Inspect(_ func(T)) Option[T] {
+	return n
+}

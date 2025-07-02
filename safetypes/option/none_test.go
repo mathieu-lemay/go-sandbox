@@ -109,3 +109,13 @@ func TestNone_UnwrapOrDefault(t *testing.T) {
 	assert.Equal(t, 0, noneInt.UnwrapOrDefault())
 	assert.Equal(t, 0.0, noneFloat.UnwrapOrDefault())
 }
+
+func TestNone_Inspect(t *testing.T) {
+	n := None()
+
+	f := func(v any) {
+		assert.Fail(t, "predicate should not have been called")
+	}
+
+	assert.Equal(t, n, n.Inspect(f))
+}
