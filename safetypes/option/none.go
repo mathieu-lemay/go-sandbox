@@ -78,3 +78,7 @@ func (n none[T]) Or(other Option[T]) Option[T] {
 func (n none[T]) OrElse(f func() Option[T]) Option[T] {
 	return f()
 }
+
+func (n none[T]) Xor(other Option[T]) Option[T] {
+	return other
+}

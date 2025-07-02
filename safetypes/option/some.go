@@ -80,3 +80,11 @@ func (s some[T]) Or(_ Option[T]) Option[T] {
 func (s some[T]) OrElse(_ func() Option[T]) Option[T] {
 	return s
 }
+
+func (s some[T]) Xor(other Option[T]) Option[T] {
+	if other.IsNone() {
+		return s
+	}
+
+	return none[T]{}
+}

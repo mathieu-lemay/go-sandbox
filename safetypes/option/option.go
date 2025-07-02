@@ -23,6 +23,7 @@ type Option[T any] interface {
 	Filter(f func(T) bool) Option[T]
 	Or(other Option[T]) Option[T]
 	OrElse(f func() Option[T]) Option[T]
+	Xor(other Option[T]) Option[T]
 }
 
 func From[T comparable](val T) Option[T] {

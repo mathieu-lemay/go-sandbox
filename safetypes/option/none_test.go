@@ -202,3 +202,17 @@ func TestNone_OrElse(t *testing.T) {
 		assert.Equal(t, other, n.OrElse(f))
 	})
 }
+
+func TestNone_Xor(t *testing.T) {
+	n := none[int]{}
+
+	t.Run("other is some", func(t *testing.T) {
+		other := Some(fake.Int())
+		assert.Equal(t, other, n.Xor(other))
+	})
+
+	t.Run("other is none", func(t *testing.T) {
+		other := none[int]{}
+		assert.Equal(t, n, n.Xor(other))
+	})
+}
