@@ -7,6 +7,22 @@ type Result[T any] struct {
 	err error
 }
 
+func From[T any](val T, err error) Result[T] {
+	if err != nil {
+		var value T
+
+		return Result[T]{
+			val: value,
+			err: err,
+		}
+	}
+
+	return Result[T]{
+		val: val,
+		err: nil,
+	}
+}
+
 func Ok[T any](val T) Result[T] {
 	return Result[T]{
 		val: val,
@@ -14,8 +30,8 @@ func Ok[T any](val T) Result[T] {
 	}
 }
 
-func Err(err error) Result[interface{}] {
-	return Result[interface{}]{
+func Err(err error) Result[any] {
+	return Result[any]{
 		val: nil,
 		err: err,
 	}

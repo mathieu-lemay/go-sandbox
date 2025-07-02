@@ -12,6 +12,37 @@ import (
 
 var fake = faker.NewWithSeed(rand.NewSource(time.Now().UnixNano()))
 
+func TestFrom_ReturnsNewResultFromArgs(t *testing.T) {
+	t.Run("ok", func(t *testing.T) {
+		v := fake.RandomStringWithLength(8)
+
+		f := func() (string, error) {
+			return v, nil
+		}
+
+		res := From(f())
+
+		assert.True(t, res.IsOk())
+		assert.Equal(t, v, res.val)
+		assert.Nil(t, res.err)
+	})
+
+	t.Run("err", func(t *testing.T) {
+		v := fake.RandomStringWithLength(8)
+		err := fmt.Errorf("some error: %s", fake.RandomStringWithLength(8))
+
+		f := func() (string, error) {
+			return v, err
+		}
+
+		res := From(f())
+
+		assert.False(t, res.IsOk())
+		assert.Zero(t, res.val)
+		assert.Equal(t, err, res.err)
+	})
+}
+
 func TestOK_ReturnsNewOkResult(t *testing.T) {
 	v := fake.Lorem().Word()
 
@@ -29,7 +60,7 @@ func TestErr_ReturnsNewErrResult(t *testing.T) {
 
 	res := Err(err)
 
-	expected := Result[interface{}]{
+	expected := Result[any]{
 		val: nil,
 		err: err,
 	}
@@ -185,7 +216,7 @@ func TestIsOkAnd(t *testing.T) {
 		err := fmt.Errorf("some error: %s", fake.RandomStringWithLength(8))
 
 		res := Err(err)
-		predicate := func(_ interface{}) bool {
+		predicate := func(_ any) bool {
 			assert.Fail(t, "predicate should not have been called")
 			return true
 		}
