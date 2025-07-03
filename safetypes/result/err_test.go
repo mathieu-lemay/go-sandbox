@@ -32,7 +32,7 @@ func TestErr_IsOkAnd(t *testing.T) {
 	for _, res := range []bool{true, false} {
 		name := fmt.Sprintf("predicate returns %v", res)
 		t.Run(name, func(t *testing.T) {
-			f := func(v any) bool {
+			f := func(_ any) bool {
 				assert.Fail(t, "predicate should not have been called")
 
 				return res

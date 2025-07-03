@@ -3,6 +3,7 @@ package result
 
 import "fmt"
 
+// Err creates an error variant of Result from the error.
 func Err[E error](err E) Result[any, E] {
 	return errT[any, E]{
 		err: err,

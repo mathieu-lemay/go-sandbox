@@ -191,7 +191,7 @@ func TestAndThen_ReturnsMappedOrNone(t *testing.T) {
 	t.Run("none", func(t *testing.T) {
 		n := None()
 
-		f := func(o any) Option[string] {
+		f := func(_ any) Option[string] {
 			assert.Fail(t, "mapper should not have been called")
 			return none[string]{}
 		}

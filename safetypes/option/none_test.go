@@ -115,7 +115,7 @@ func TestNone_UnwrapOrDefault(t *testing.T) {
 func TestNone_Inspect(t *testing.T) {
 	n := None()
 
-	f := func(v any) {
+	f := func(_ any) {
 		assert.Fail(t, "predicate should not have been called")
 	}
 

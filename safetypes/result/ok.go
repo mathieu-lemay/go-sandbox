@@ -3,6 +3,7 @@ package result
 
 import "fmt"
 
+// Ok creates an ok variant of Result from the value.
 func Ok[T any](val T) Result[T, error] {
 	return ok[T, error]{
 		val: val,

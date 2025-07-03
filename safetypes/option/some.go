@@ -68,9 +68,9 @@ func (s some[T]) OkOrElse(_ func() error) result.Result[T, error] {
 func (s some[T]) Filter(f func(T) bool) Option[T] {
 	if f(s.val) {
 		return s
-	} else {
-		return none[T]{}
 	}
+
+	return none[T]{}
 }
 
 func (s some[T]) Or(_ Option[T]) Option[T] {
