@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/rs/zerolog"
-	"github.com/stretchr/testify/require"
-
 	"github.com/go-playground/validator/v10"
 	"github.com/jaswdr/faker/v2"
-	"github.com/mathieu-lemay/go-sandbox/logging"
+	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	"github.com/mathieu-lemay/go-sandbox/logging"
 )
 
 var (

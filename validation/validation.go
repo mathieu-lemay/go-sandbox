@@ -7,8 +7,9 @@ import (
 	"unsafe"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/mathieu-lemay/go-sandbox/logging"
 	"github.com/rs/zerolog/log"
+
+	"github.com/mathieu-lemay/go-sandbox/logging"
 )
 
 type Animal struct {
