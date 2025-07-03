@@ -2,8 +2,6 @@ package option
 
 import (
 	"errors"
-
-	"github.com/mathieu-lemay/go-sandbox/safetypes/result"
 )
 
 type none[T any] struct{}
@@ -53,18 +51,6 @@ func (n none[T]) UnwrapOrDefault() T {
 
 func (n none[T]) Inspect(_ func(T)) Option[T] {
 	return n
-}
-
-func (n none[T]) OkOr(err error) result.Result[T, error] {
-	var v T
-
-	return result.From(v, err)
-}
-
-func (n none[T]) OkOrElse(f func() error) result.Result[T, error] {
-	var v T
-
-	return result.From(v, f())
 }
 
 func (n none[T]) Filter(_ func(T) bool) Option[T] {

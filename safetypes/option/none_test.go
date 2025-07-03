@@ -1,14 +1,11 @@
 package option
 
 import (
-	"errors"
 	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/mathieu-lemay/go-sandbox/safetypes/result"
 )
 
 func TestNone_ReturnsNewNoneOption(t *testing.T) {
@@ -124,29 +121,6 @@ func TestNone_Inspect(t *testing.T) {
 	}
 
 	assert.Equal(t, n, n.Inspect(f))
-}
-
-func TestNone_OkOr(t *testing.T) {
-	n := None()
-
-	err := errors.New(fake.RandomStringWithLength(8))
-
-	expected := result.Err(err)
-
-	assert.Equal(t, expected, n.OkOr(err))
-}
-
-func TestNone_OkOrElse(t *testing.T) {
-	n := None()
-
-	err := errors.New(fake.RandomStringWithLength(8))
-	f := func() error {
-		return err
-	}
-
-	expected := result.Err(err)
-
-	assert.Equal(t, expected, n.OkOrElse(f))
 }
 
 func TestNone_Filter(t *testing.T) {

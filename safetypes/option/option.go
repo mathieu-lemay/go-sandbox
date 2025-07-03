@@ -3,8 +3,6 @@ package option
 
 import (
 	"reflect"
-
-	"github.com/mathieu-lemay/go-sandbox/safetypes/result"
 )
 
 // Option is a type that represents either a value (Some) or not (None).
@@ -19,8 +17,6 @@ type Option[T any] interface {
 	UnwrapOrElse(f func() T) T
 	UnwrapOrDefault() T
 	Inspect(f func(T)) Option[T]
-	OkOr(err error) result.Result[T, error]
-	OkOrElse(f func() error) result.Result[T, error]
 	Filter(f func(T) bool) Option[T]
 	Or(other Option[T]) Option[T]
 	OrElse(f func() Option[T]) Option[T]

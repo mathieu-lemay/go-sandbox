@@ -1,7 +1,5 @@
 package option
 
-import "github.com/mathieu-lemay/go-sandbox/safetypes/result"
-
 type some[T any] struct {
 	val T
 }
@@ -53,14 +51,6 @@ func (s some[T]) Inspect(f func(T)) Option[T] {
 	f(s.val)
 
 	return s
-}
-
-func (s some[T]) OkOr(_ error) result.Result[T, error] {
-	return result.Ok(s.val)
-}
-
-func (s some[T]) OkOrElse(_ func() error) result.Result[T, error] {
-	return result.Ok(s.val)
 }
 
 func (s some[T]) Filter(f func(T) bool) Option[T] {
