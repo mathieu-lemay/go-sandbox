@@ -28,7 +28,7 @@ type Option[T any] interface {
 }
 
 // From creates an Option from the given value.
-func From[T comparable](val T) Option[T] {
+func From[T any](val T) Option[T] {
 	if reflect.ValueOf(&val).Elem().IsZero() {
 		return none[T]{}
 	}
