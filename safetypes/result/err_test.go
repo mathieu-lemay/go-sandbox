@@ -93,6 +93,32 @@ func TestErr_ExpectErr(t *testing.T) {
 	assert.Equal(t, err, e.ExpectErr(msg))
 }
 
+func TestErr_Inspect(t *testing.T) {
+	err := fmt.Errorf("some error: %s", fake.RandomStringWithLength(8))
+	e := Err(err)
+
+	f := func(_ *any) {
+		assert.Fail(t, "inspector should not be called")
+	}
+
+	assert.Equal(t, e, e.Inspect(f))
+}
+
+func TestErr_InspectErr(t *testing.T) {
+	err := fmt.Errorf("some error: %s", fake.RandomStringWithLength(8))
+	e := Err(err)
+
+	called := false
+	f := func(ep *error) {
+		called = true
+
+		assert.Equal(t, err, *ep)
+	}
+
+	assert.Equal(t, e, e.InspectErr(f))
+	assert.True(t, called, "inspector should have been called")
+}
+
 func TestErr_Unwrap(t *testing.T) {
 	err := fmt.Errorf("some error: %s", fake.RandomStringWithLength(8))
 	e := Err(err)

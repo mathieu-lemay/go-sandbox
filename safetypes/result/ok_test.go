@@ -89,6 +89,32 @@ func TestOk_ExpectErr(t *testing.T) {
 	})
 }
 
+func TestOk_Inspect(t *testing.T) {
+	value := fake.Int()
+	o := Ok(value)
+
+	called := false
+	f := func(v *int) {
+		called = true
+
+		assert.Equal(t, value, *v)
+	}
+
+	assert.Equal(t, o, o.Inspect(f))
+	assert.True(t, called, "inspector should have been called")
+}
+
+func TestOk_InspectErr(t *testing.T) {
+	value := fake.Int()
+	o := Ok(value)
+
+	f := func(_ *error) {
+		assert.Fail(t, "inspector should not be called")
+	}
+
+	assert.Equal(t, o, o.InspectErr(f))
+}
+
 func TestOk_Unwrap(t *testing.T) {
 	value := fake.Int()
 	s := Ok(value)

@@ -38,6 +38,16 @@ func (o ok[T, E]) ExpectErr(msg string) E {
 	panic(fmt.Errorf("%s: %v", msg, o.val))
 }
 
+func (o ok[T, E]) Inspect(f func(*T)) Result[T, E] {
+	f(&o.val)
+
+	return o
+}
+
+func (o ok[T, E]) InspectErr(_ func(*E)) Result[T, E] {
+	return o
+}
+
 func (o ok[T, E]) Unwrap() T {
 	return o.val
 }

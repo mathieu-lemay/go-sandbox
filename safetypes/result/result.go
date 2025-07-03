@@ -17,8 +17,8 @@ type Result[T any, E error] interface {
 	IsErrAnd(f func(error) bool) bool
 	// Ok() option.Option[T]
 	// Err() option.Option[E]
-	// Inspect(func(*T)) Result[T, E]
-	// InspectErr(func(*E)) Result[T, E]
+	Inspect(f func(*T)) Result[T, E]
+	InspectErr(f func(*E)) Result[T, E]
 	Expect(msg string) T
 	ExpectErr(msg string) E
 	Unwrap() T

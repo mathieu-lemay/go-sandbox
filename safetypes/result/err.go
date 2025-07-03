@@ -38,6 +38,16 @@ func (e errT[T, E]) ExpectErr(_ string) E {
 	return e.err
 }
 
+func (e errT[T, E]) Inspect(_ func(*T)) Result[T, E] {
+	return e
+}
+
+func (e errT[T, E]) InspectErr(f func(*E)) Result[T, E] {
+	f(&e.err)
+
+	return e
+}
+
 func (e errT[T, E]) Unwrap() T {
 	panic(fmt.Errorf("called `Result.Unwrap()` on an `Err` value: %w", e.err))
 }
