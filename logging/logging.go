@@ -1,3 +1,4 @@
+// Package logging provides logging tools
 package logging
 
 import (
@@ -8,6 +9,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// ConfigureLogger initializes zerolog's logger.
 func ConfigureLogger(opts ...LogConfig) error {
 	config := ConfigureLoggerOptions{
 		Level: zerolog.InfoLevel,
@@ -30,7 +32,11 @@ func ConfigureLogger(opts ...LogConfig) error {
 	zerolog.TimeFieldFormat = time.RFC3339Nano
 	zerolog.TimestampFieldName = "timestamp"
 
-	logger := log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	logger := log.Output(
+		zerolog.ConsoleWriter{ //nolint:exhaustruct  // Other fields are Zero by design
+			Out: os.Stderr,
+		},
+	)
 	logger = logger.Hook(&FileNameHook{})
 
 	log.Logger = logger
@@ -38,18 +44,25 @@ func ConfigureLogger(opts ...LogConfig) error {
 	return nil
 }
 
+const fileNameHookFrameSkip = 3
+
+// FileNameHook is a hook to add the name of the file from which a log was emitted.
 type FileNameHook struct{}
 
-func (_ *FileNameHook) Run(e *zerolog.Event, level zerolog.Level, message string) {
-	e = e.Caller(3)
+// Run applies the FileNameHook.
+func (*FileNameHook) Run(e *zerolog.Event, _ zerolog.Level, _ string) {
+	e.Caller(fileNameHookFrameSkip)
 }
 
+// ConfigureLoggerOptions is the configuration for our logger.
 type ConfigureLoggerOptions struct {
 	Level zerolog.Level
 }
 
+// LogConfig is a function to change the logger configuration.
 type LogConfig func(*ConfigureLoggerOptions)
 
+// WithLevel changes the log level.
 func WithLevel(l zerolog.Level) LogConfig {
 	return func(c *ConfigureLoggerOptions) {
 		c.Level = l

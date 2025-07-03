@@ -43,3 +43,11 @@ repos:
     hooks:
       - id: go-mod-tidy
       - id: no-go-testing
+  - repo: https://github.com/golangci/golangci-lint
+    rev: v2.1.6
+    hooks:
+      - id: golangci-lint-full
+        name: golangci-lint
+        alias: golangci-lint
+        additional_dependencies:
+          - "github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.1.6"

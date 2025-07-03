@@ -1,0 +1,72 @@
+version: "2"
+linters:
+  default: all
+  disable:
+    - depguard
+    - err113
+    - godox
+    - paralleltest
+    - testpackage
+    - varnamelen
+    - wsl
+  settings:
+    forbidigo:
+      forbid:
+        - pattern: ^(fmt\.Print(|f|ln)|print|println)$
+          msg: Do not commit print statements.
+    funlen:
+      lines: -1 # disables line count check
+      statements: 50
+      ignore-comments: true
+    gocyclo:
+      min-complexity: 15
+    govet:
+      enable:
+        - shadow
+    nolintlint:
+      require-explanation: true
+      require-specific: false
+      allow-unused: false
+    revive:
+      confidence: 0
+    staticcheck:
+      checks:
+        - all
+        - -ST1000
+    wsl_v5:
+      default: default
+      disable:
+        - decl
+  exclusions:
+    generated: lax
+    rules:
+      - linters:
+          - dupl
+          - errcheck
+          - funlen
+          - gochecknoglobals
+          - gocyclo
+          - gosec
+        path: _test\.go
+      - linters:
+          - interfacebloat
+          - ireturn
+        path: safetypes/.*/.*\.go
+      - linters:
+          - govet
+        text: 'shadow: declaration of "(err|ctx)" shadows declaration at'
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+
+      # Temporary
+      - iter/.*
+      - validation/.*
+formatters:
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
