@@ -1,71 +1,47 @@
 // Package result implements https://doc.rust-lang.org/std/result/enum.Result.html
 package result
 
-import "fmt"
+import (
+	"reflect"
+)
 
-type Result[T any] struct {
-	val T
-	err error
+type Result[T any, E error] interface {
+	IsOk() bool
+	IsOkAnd(f func(T) bool) bool
+	IsErr() bool
+	IsErrAnd(f func(error) bool) bool
+	//Ok() option.Option[T]
+	//Err() option.Option[E]
 }
 
-func From[T any](val T, err error) Result[T] {
-	if err != nil {
-		var value T
-
-		return Result[T]{
-			val: value,
+func From[T any, E error](val T, err E) Result[T, E] {
+	if !reflect.ValueOf(&err).Elem().IsNil() {
+		return errT[T, E]{
 			err: err,
 		}
 	}
 
-	return Result[T]{
+	return ok[T, E]{
 		val: val,
-		err: nil,
 	}
 }
 
-func Ok[T any](val T) Result[T] {
-	return Result[T]{
-		val: val,
-		err: nil,
-	}
+func Map[T any, U any, E error](result Result[T, E], f func(T) U) Result[U, E] {
+	return ok[U, E]{}
 }
 
-func Err(err error) Result[any] {
-	return Result[any]{
-		val: nil,
-		err: err,
-	}
+func MapOr[T any, U any, E error](result Result[T, E], def U, f func(T) U) Result[U, E] {
+	return Ok(def)
 }
 
-func (r Result[T]) Expect(msg string) T {
-	if r.err != nil {
-		panic(fmt.Errorf("%s: %w", msg, r.err))
-	}
-
-	return r.val
+func MapOrElse[T any, U any, E error](
+	result Result[T, E],
+	factory func() U,
+	mapper func(T) U,
+) Result[U, E] {
+	return Ok(factory())
 }
 
-func (r Result[T]) ExpectErr(msg string) error {
-	if r.err == nil {
-		panic(fmt.Errorf("%s: %v", msg, r.val))
-	}
-
-	return r.err
-}
-
-func (r Result[T]) IsErr() bool {
-	return r.err != nil
-}
-
-func (r Result[T]) IsErrAnd(predicate func(error) bool) bool {
-	return r.err != nil && predicate(r.err)
-}
-
-func (r Result[T]) IsOk() bool {
-	return r.err == nil
-}
-
-func (r Result[T]) IsOkAnd(predicate func(T) bool) bool {
-	return r.err == nil && predicate(r.val)
+func MapErr[T any, E error, F error](result Result[T, E], f func(E) F) Result[T, F] {
+	return errT[T, F]{}
 }

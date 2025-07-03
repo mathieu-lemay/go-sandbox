@@ -18,8 +18,8 @@ type Option[T any] interface {
 	UnwrapOrElse(f func() T) T
 	UnwrapOrDefault() T
 	Inspect(f func(T)) Option[T]
-	OkOr(error) result.Result[T]
-	OkOrElse(func() error) result.Result[T]
+	OkOr(error) result.Result[T, error]
+	OkOrElse(func() error) result.Result[T, error]
 	Filter(f func(T) bool) Option[T]
 	Or(other Option[T]) Option[T]
 	OrElse(f func() Option[T]) Option[T]

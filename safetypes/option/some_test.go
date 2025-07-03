@@ -35,7 +35,7 @@ func TestSome_IsNoneOr(t *testing.T) {
 	s := Some(value)
 
 	for _, res := range []bool{true, false} {
-		name := fmt.Sprintf("predicate returns %T", res)
+		name := fmt.Sprintf("predicate returns %v", res)
 		t.Run(name, func(t *testing.T) {
 			called := false
 
@@ -64,7 +64,7 @@ func TestSome_IsSomeAnd(t *testing.T) {
 	s := Some(value)
 
 	for _, res := range []bool{true, false} {
-		name := fmt.Sprintf("predicate returns %T", res)
+		name := fmt.Sprintf("predicate returns %v", res)
 		t.Run(name, func(t *testing.T) {
 			called := false
 

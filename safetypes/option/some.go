@@ -57,11 +57,11 @@ func (s some[T]) Inspect(f func(T)) Option[T] {
 	return s
 }
 
-func (s some[T]) OkOr(_ error) result.Result[T] {
+func (s some[T]) OkOr(_ error) result.Result[T, error] {
 	return result.Ok(s.val)
 }
 
-func (s some[T]) OkOrElse(_ func() error) result.Result[T] {
+func (s some[T]) OkOrElse(_ func() error) result.Result[T, error] {
 	return result.Ok(s.val)
 }
 
