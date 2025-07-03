@@ -1,6 +1,8 @@
 // Package result implements https://doc.rust-lang.org/std/result/enum.Result.html
 package result
 
+import "fmt"
+
 func Ok[T any](val T) Result[T, error] {
 	return ok[T, error]{
 		val: val,
@@ -27,34 +29,30 @@ func (o ok[T, E]) IsErrAnd(_ func(error) bool) bool {
 	return false
 }
 
-//func (r Result[T, E]) Expect(msg string) T {
-//	if r.err != nil {
-//		panic(fmt.Errorf("%s: %w", msg, r.err))
-//	}
-//
-//	return r.val
-//}
-//
-//func (r Result[T, E]) ExpectErr(msg string) error {
-//	if r.err == nil {
-//		panic(fmt.Errorf("%s: %v", msg, r.val))
-//	}
-//
-//	return r.err
-//}
-//
-//func (r Result[T, E]) IsErr() bool {
-//	return r.err != nil
-//}
-//
-//func (r Result[T, E]) IsErrAnd(predicate func(error) bool) bool {
-//	return r.err != nil && predicate(r.err)
-//}
-//
-//func (r Result[T, E]) IsOk() bool {
-//	return r.err == nil
-//}
-//
-//func (r Result[T, E]) IsOkAnd(predicate func(T) bool) bool {
-//	return r.err == nil && predicate(r.val)
-//}
+func (o ok[T, E]) Expect(_ string) T {
+	return o.val
+}
+
+func (o ok[T, E]) ExpectErr(msg string) E {
+	panic(fmt.Errorf("%s: %v", msg, o.val))
+}
+
+func (o ok[T, E]) Unwrap() T {
+	return o.val
+}
+
+func (o ok[T, E]) UnwrapOr(_ T) T {
+	return o.val
+}
+
+func (o ok[T, E]) UnwrapOrElse(_ func() T) T {
+	return o.val
+}
+
+func (o ok[T, E]) UnwrapOrDefault() T {
+	return o.val
+}
+
+func (o ok[T, E]) UnwrapErr() E {
+	panic(fmt.Errorf("called `Result.UnwrapErr()` on an `Ok` value: %v", o.val))
+}

@@ -8,61 +8,15 @@ import (
 )
 
 func TestOK_ReturnsNewOkResult(t *testing.T) {
-	v := fake.Lorem().Word()
+	value := fake.Lorem().Word()
 
-	res := Ok(v)
+	res := Ok(value)
 
 	expected := ok[string, error]{
-		val: v,
+		val: value,
 	}
 	assert.Equal(t, expected, res)
 }
-
-//	func TestOk_Expect(t *testing.T) {
-//		t.Run("ok", func(t *testing.T) {
-//			v := fake.RandomStringWithLength(8)
-//			msg := fake.RandomStringWithLength(8)
-//
-//			res := Ok(v)
-//
-//			assert.Equal(t, v, res.Expect(msg))
-//		})
-//
-//		t.Run("err", func(t *testing.T) {
-//			err := fmt.Errorf("some error: %s", fake.RandomStringWithLength(8))
-//			msg := fake.RandomStringWithLength(8)
-//
-//			res := Err(err)
-//
-//			expectedError := fmt.Errorf("%s: %w", msg, err)
-//			assert.PanicsWithError(t, expectedError.Error(), func() {
-//				res.Expect(msg)
-//			})
-//		})
-//	}
-//
-//	func TestOk_ExpectErr(t *testing.T) {
-//		t.Run("ok", func(t *testing.T) {
-//			v := fake.RandomStringWithLength(8)
-//			msg := fake.RandomStringWithLength(8)
-//
-//			res := Ok(v)
-//
-//			expectedError := fmt.Errorf("%s: %s", msg, v)
-//			assert.PanicsWithError(t, expectedError.Error(), func() {
-//				res.ExpectErr(msg)
-//			})
-//		})
-//
-//		t.Run("err", func(t *testing.T) {
-//			err := fmt.Errorf("some error: %s", fake.RandomStringWithLength(8))
-//			msg := fake.RandomStringWithLength(8)
-//
-//			res := Err(err)
-//
-//			assert.Equal(t, err, res.ExpectErr(msg))
-//		})
-//	}
 
 func TestOk_IsOk(t *testing.T) {
 	o := Ok(fake.Int())
@@ -114,4 +68,72 @@ func TestOk_IsErrAnd(t *testing.T) {
 			assert.False(t, o.IsErrAnd(f))
 		})
 	}
+}
+
+func TestOk_Expect(t *testing.T) {
+	value := fake.Int()
+	o := Ok(value)
+
+	msg := fake.RandomStringWithLength(8)
+	assert.Equal(t, value, o.Expect(msg))
+}
+
+func TestOk_ExpectErr(t *testing.T) {
+	value := fake.Int()
+	o := Ok(value)
+
+	msg := fake.RandomStringWithLength(8)
+	expectedError := fmt.Errorf("%s: %v", msg, value)
+	assert.PanicsWithError(t, expectedError.Error(), func() {
+		_ = o.ExpectErr(msg)
+	})
+}
+
+func TestOk_Unwrap(t *testing.T) {
+	value := fake.Int()
+	s := Ok(value)
+
+	assert.Equal(t, value, s.Unwrap())
+}
+
+func TestOk_UnwrapOr(t *testing.T) {
+	value := fake.Int()
+	s := Ok(value)
+
+	def := fake.Int()
+
+	assert.Equal(t, value, s.UnwrapOr(def))
+}
+
+func TestOk_UnwrapOrElse(t *testing.T) {
+	value := fake.Int()
+	s := Ok(value)
+
+	def := fake.Int()
+	f := func() int {
+		assert.Fail(t, "should not be called")
+		return def
+	}
+
+	assert.Equal(t, value, s.UnwrapOrElse(f))
+}
+
+func TestOk_UnwrapOrDefault(t *testing.T) {
+	valStr := fake.RandomStringWithLength(8)
+	valInt := fake.IntBetween(1, 100)
+	valFloat := fake.Float64(2, 1, 100)
+
+	assert.Equal(t, valStr, Ok(valStr).UnwrapOrDefault())
+	assert.Equal(t, valInt, Ok(valInt).UnwrapOrDefault())
+	assert.Equal(t, valFloat, Ok(valFloat).UnwrapOrDefault())
+}
+
+func TestOk_UnwrapErr(t *testing.T) {
+	value := fake.Int()
+	o := Ok(value)
+
+	expected := fmt.Errorf("called `Result.UnwrapErr()` on an `Ok` value: %v", value)
+	assert.PanicsWithError(t, expected.Error(), func() {
+		_ = o.UnwrapErr()
+	})
 }

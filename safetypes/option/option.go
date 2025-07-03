@@ -17,7 +17,7 @@ type Option[T any] interface {
 	UnwrapOr(def T) T
 	UnwrapOrElse(f func() T) T
 	UnwrapOrDefault() T
-	Inspect(f func(T)) Option[T]
+	Inspect(f func(T)) Option[T] // TODO: Use *T in func?
 	OkOr(error) result.Result[T, error]
 	OkOrElse(func() error) result.Result[T, error]
 	Filter(f func(T) bool) Option[T]

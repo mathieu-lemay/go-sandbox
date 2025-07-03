@@ -18,52 +18,6 @@ func TestErr_ReturnsNewErrResult(t *testing.T) {
 	assert.Equal(t, expected, res)
 }
 
-//	func TestErr_Expect(t *testing.T) {
-//		t.Run("ok", func(t *testing.T) {
-//			v := fake.RandomStringWithLength(8)
-//			msg := fake.RandomStringWithLength(8)
-//
-//			res := Ok(v)
-//
-//			assert.Equal(t, v, res.Expect(msg))
-//		})
-//
-//		t.Run("err", func(t *testing.T) {
-//			err := fmt.Errorf("some error: %s", fake.RandomStringWithLength(8))
-//			msg := fake.RandomStringWithLength(8)
-//
-//			res := Err(err)
-//
-//			expectedError := fmt.Errorf("%s: %w", msg, err)
-//			assert.PanicsWithError(t, expectedError.Error(), func() {
-//				res.Expect(msg)
-//			})
-//		})
-//	}
-//
-//	func TestErr_ExpectErr(t *testing.T) {
-//		t.Run("ok", func(t *testing.T) {
-//			v := fake.RandomStringWithLength(8)
-//			msg := fake.RandomStringWithLength(8)
-//
-//			res := Ok(v)
-//
-//			expectedError := fmt.Errorf("%s: %s", msg, v)
-//			assert.PanicsWithError(t, expectedError.Error(), func() {
-//				res.ExpectErr(msg)
-//			})
-//		})
-//
-//		t.Run("err", func(t *testing.T) {
-//			err := fmt.Errorf("some error: %s", fake.RandomStringWithLength(8))
-//			msg := fake.RandomStringWithLength(8)
-//
-//			res := Err(err)
-//
-//			assert.Equal(t, err, res.ExpectErr(msg))
-//		})
-//	}
-
 func TestErr_IsOk(t *testing.T) {
 	err := fmt.Errorf("some error: %s", fake.RandomStringWithLength(8))
 	e := Err(err)
@@ -117,4 +71,72 @@ func TestErr_IsErrAnd(t *testing.T) {
 			assert.True(t, called, "predicate should have been called")
 		})
 	}
+}
+
+func TestErr_Expect(t *testing.T) {
+	err := fmt.Errorf("some error: %s", fake.RandomStringWithLength(8))
+	e := Err(err)
+
+	msg := fake.RandomStringWithLength(8)
+	expectedError := fmt.Errorf("%s: %w", msg, err)
+	assert.PanicsWithError(t, expectedError.Error(), func() {
+		e.Expect(msg)
+	})
+}
+
+func TestErr_ExpectErr(t *testing.T) {
+	err := fmt.Errorf("some error: %s", fake.RandomStringWithLength(8))
+	e := Err(err)
+
+	msg := fake.RandomStringWithLength(8)
+
+	assert.Equal(t, err, e.ExpectErr(msg))
+}
+
+func TestErr_Unwrap(t *testing.T) {
+	err := fmt.Errorf("some error: %s", fake.RandomStringWithLength(8))
+	e := Err(err)
+
+	expected := fmt.Errorf("called `Result.Unwrap()` on an `Err` value: %w", err)
+	assert.PanicsWithError(t, expected.Error(), func() {
+		e.Unwrap()
+	})
+}
+
+func TestErr_UnwrapOr(t *testing.T) {
+	err := fmt.Errorf("some error: %s", fake.RandomStringWithLength(8))
+	e := Err(err)
+
+	def := fake.RandomStringWithLength(8)
+
+	assert.Equal(t, def, e.UnwrapOr(def))
+}
+
+func TestErr_UnwrapOrElse(t *testing.T) {
+	err := fmt.Errorf("some error: %s", fake.RandomStringWithLength(8))
+	e := Err(err)
+
+	def := fake.RandomStringWithLength(8)
+	f := func() any {
+		return def
+	}
+
+	assert.Equal(t, def, e.UnwrapOrElse(f))
+}
+
+func TestErr_UnwrapOrDefault(t *testing.T) {
+	noneStr := errT[string, error]{}
+	noneInt := errT[int, error]{}
+	noneFloat := errT[float64, error]{}
+
+	assert.Equal(t, "", noneStr.UnwrapOrDefault())
+	assert.Equal(t, 0, noneInt.UnwrapOrDefault())
+	assert.Equal(t, 0.0, noneFloat.UnwrapOrDefault())
+}
+
+func TestErr_UnwrapErr(t *testing.T) {
+	err := fmt.Errorf("some error: %s", fake.RandomStringWithLength(8))
+	e := Err(err)
+
+	assert.Equal(t, err, e.UnwrapErr())
 }

@@ -1,6 +1,8 @@
 // Package result implements https://doc.rust-lang.org/std/result/enum.Result.html
 package result
 
+import "fmt"
+
 func Err[E error](err E) Result[any, E] {
 	return errT[any, E]{
 		err: err,
@@ -27,18 +29,31 @@ func (e errT[T, E]) IsErrAnd(f func(error) bool) bool {
 	return f(e.err)
 }
 
-//func (r Result[T, E]) Expect(msg string) T {
-//	if r.err != nil {
-//		panic(fmt.Errorf("%s: %w", msg, r.err))
-//	}
-//
-//	return r.val
-//}
-//
-//func (r Result[T, E]) ExpectErr(msg string) error {
-//	if r.err == nil {
-//		panic(fmt.Errorf("%s: %v", msg, r.val))
-//	}
-//
-//	return r.err
-//}
+func (e errT[T, E]) Expect(msg string) T {
+	panic(fmt.Errorf("%s: %w", msg, e.err))
+}
+
+func (e errT[T, E]) ExpectErr(_ string) E {
+	return e.err
+}
+
+func (e errT[T, E]) Unwrap() T {
+	panic(fmt.Errorf("called `Result.Unwrap()` on an `Err` value: %w", e.err))
+}
+
+func (e errT[T, E]) UnwrapOr(def T) T {
+	return def
+}
+
+func (e errT[T, E]) UnwrapOrElse(f func() T) T {
+	return f()
+}
+
+func (e errT[T, E]) UnwrapOrDefault() T {
+	var v T
+	return v
+}
+
+func (e errT[T, E]) UnwrapErr() E {
+	return e.err
+}
