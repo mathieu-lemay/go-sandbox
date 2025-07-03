@@ -6,12 +6,9 @@ import (
 	"github.com/mathieu-lemay/go-sandbox/safetypes/result"
 )
 
-var (
-	_ Option[any] = none[any]{}
-)
-
 type none[T any] struct{}
 
+// None creates a None variant of Option.
 func None() Option[any] {
 	return none[any]{}
 }
@@ -50,6 +47,7 @@ func (n none[T]) UnwrapOrElse(f func() T) T {
 
 func (n none[T]) UnwrapOrDefault() T {
 	var v T
+
 	return v
 }
 
@@ -59,11 +57,13 @@ func (n none[T]) Inspect(_ func(T)) Option[T] {
 
 func (n none[T]) OkOr(err error) result.Result[T, error] {
 	var v T
+
 	return result.From(v, err)
 }
 
 func (n none[T]) OkOrElse(f func() error) result.Result[T, error] {
 	var v T
+
 	return result.From(v, f())
 }
 

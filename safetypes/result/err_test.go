@@ -125,13 +125,16 @@ func TestErr_UnwrapOrElse(t *testing.T) {
 }
 
 func TestErr_UnwrapOrDefault(t *testing.T) {
-	noneStr := errT[string, error]{}
-	noneInt := errT[int, error]{}
-	noneFloat := errT[float64, error]{}
+	noneStr := errT[string, error]{}    //nolint:exhaustruct  // We want zero values
+	noneInt := errT[int, error]{}       //nolint:exhaustruct  // We want zero values
+	noneFloat := errT[float64, error]{} //nolint:exhaustruct  // We want zero values
 
-	assert.Equal(t, "", noneStr.UnwrapOrDefault())
-	assert.Equal(t, 0, noneInt.UnwrapOrDefault())
-	assert.Equal(t, 0.0, noneFloat.UnwrapOrDefault())
+	assert.Zero( //nolint:testifylint  // Using assert.Zero for consistency
+		t,
+		noneStr.UnwrapOrDefault(),
+	)
+	assert.Zero(t, noneInt.UnwrapOrDefault())
+	assert.Zero(t, noneFloat.UnwrapOrDefault())
 }
 
 func TestErr_UnwrapErr(t *testing.T) {

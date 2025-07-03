@@ -112,6 +112,7 @@ func TestOk_UnwrapOrElse(t *testing.T) {
 	def := fake.Int()
 	f := func() int {
 		assert.Fail(t, "should not be called")
+
 		return def
 	}
 
@@ -125,7 +126,11 @@ func TestOk_UnwrapOrDefault(t *testing.T) {
 
 	assert.Equal(t, valStr, Ok(valStr).UnwrapOrDefault())
 	assert.Equal(t, valInt, Ok(valInt).UnwrapOrDefault())
-	assert.Equal(t, valFloat, Ok(valFloat).UnwrapOrDefault())
+	assert.Equal( //nolint:testifylint  // Value should be _exactly_ equal
+		t,
+		valFloat,
+		Ok(valFloat).UnwrapOrDefault(),
+	)
 }
 
 func TestOk_UnwrapErr(t *testing.T) {

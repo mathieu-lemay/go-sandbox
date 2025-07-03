@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/mathieu-lemay/go-sandbox/safetypes/result"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/mathieu-lemay/go-sandbox/safetypes/result"
 )
 
 func TestSome_ReturnsNewSomeOption(t *testing.T) {
@@ -112,6 +113,7 @@ func TestSome_UnwrapOrElse(t *testing.T) {
 	def := fake.Int()
 	f := func() int {
 		assert.Fail(t, "should not be called")
+
 		return def
 	}
 
@@ -125,7 +127,11 @@ func TestSome_UnwrapOrDefault(t *testing.T) {
 
 	assert.Equal(t, valStr, Some(valStr).UnwrapOrDefault())
 	assert.Equal(t, valInt, Some(valInt).UnwrapOrDefault())
-	assert.Equal(t, valFloat, Some(valFloat).UnwrapOrDefault())
+	assert.Equal( //nolint:testifylint  // Value should be _exactly_ equal
+		t,
+		valFloat,
+		Some(valFloat).UnwrapOrDefault(),
+	)
 }
 
 func TestSome_Inspect(t *testing.T) {
@@ -135,6 +141,7 @@ func TestSome_Inspect(t *testing.T) {
 	called := false
 	f := func(v int) {
 		called = true
+
 		assert.Equal(t, value, v)
 	}
 
@@ -157,6 +164,7 @@ func TestSome_OkOrElse(t *testing.T) {
 
 	f := func() error {
 		assert.Fail(t, "should not be called")
+
 		return errors.New(fake.RandomStringWithLength(8))
 	}
 
@@ -186,6 +194,7 @@ func TestSome_Filter(t *testing.T) {
 			} else {
 				assert.Equal(t, none[int]{}, s.Filter(f))
 			}
+
 			assert.True(t, called, "predicate should have been called")
 		})
 	}
@@ -206,6 +215,7 @@ func TestSome_OrElse(t *testing.T) {
 
 	f := func() Option[int] {
 		assert.Fail(t, "should not be called")
+
 		return Some(fake.Int())
 	}
 

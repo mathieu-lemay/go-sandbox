@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/mathieu-lemay/go-sandbox/safetypes/result"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/mathieu-lemay/go-sandbox/safetypes/result"
 )
 
 func TestNone_ReturnsNewNoneOption(t *testing.T) {
@@ -107,9 +108,12 @@ func TestNone_UnwrapOrDefault(t *testing.T) {
 	noneInt := none[int]{}
 	noneFloat := none[float64]{}
 
-	assert.Equal(t, "", noneStr.UnwrapOrDefault())
-	assert.Equal(t, 0, noneInt.UnwrapOrDefault())
-	assert.Equal(t, 0.0, noneFloat.UnwrapOrDefault())
+	assert.Zero( //nolint:testifylint  // Using assert.Zero for consistency
+		t,
+		noneStr.UnwrapOrDefault(),
+	)
+	assert.Zero(t, noneInt.UnwrapOrDefault())
+	assert.Zero(t, noneFloat.UnwrapOrDefault())
 }
 
 func TestNone_Inspect(t *testing.T) {

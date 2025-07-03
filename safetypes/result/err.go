@@ -3,7 +3,7 @@ package result
 
 import "fmt"
 
-// Err creates an error variant of Result from the error.
+// Err creates an Err variant of Result from the error.
 func Err[E error](err E) Result[any, E] {
 	return errT[any, E]{
 		err: err,
@@ -52,6 +52,7 @@ func (e errT[T, E]) UnwrapOrElse(f func() T) T {
 
 func (e errT[T, E]) UnwrapOrDefault() T {
 	var v T
+
 	return v
 }
 

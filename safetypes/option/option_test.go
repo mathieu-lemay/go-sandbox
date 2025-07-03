@@ -41,7 +41,7 @@ func TestFrom_ReturnsNewOptionFromArgs(t *testing.T) {
 		res7 := From(&zeroStr)
 		assert.True(t, res7.IsSome())
 
-		zeroS := S{}
+		zeroS := S{} //nolint:exhaustruct  // We want the zero value
 		res8 := From(&zeroS)
 		assert.True(t, res8.IsSome())
 	})
@@ -59,7 +59,7 @@ func TestFrom_ReturnsNewOptionFromArgs(t *testing.T) {
 		res4 := From(false)
 		assert.True(t, res4.IsNone())
 
-		res5 := From(S{})
+		res5 := From(S{}) //nolint:exhaustruct  // We want the zero value
 		assert.True(t, res5.IsNone())
 
 		res6 := From((*string)(nil))
@@ -72,13 +72,9 @@ func TestMap_ReturnsANewOptionWithMappedValue(t *testing.T) {
 		val := fake.Int()
 		s := Some(val)
 
-		f := func(v int) string {
-			return strconv.Itoa(v)
-		}
-
 		expected := Some(strconv.Itoa(val))
 
-		assert.Equal(t, expected, Map(s, f))
+		assert.Equal(t, expected, Map(s, strconv.Itoa))
 	})
 
 	t.Run("none", func(t *testing.T) {
@@ -86,6 +82,7 @@ func TestMap_ReturnsANewOptionWithMappedValue(t *testing.T) {
 
 		f := func(any) int {
 			assert.Fail(t, "mapper should not have been called")
+
 			return 0
 		}
 
@@ -99,13 +96,10 @@ func TestMapOr_ReturnsTheMappedValueOrDefault(t *testing.T) {
 		s := Some(val)
 
 		def := fake.RandomStringWithLength(9)
-		f := func(v int) string {
-			return strconv.Itoa(v)
-		}
 
 		expected := strconv.Itoa(val)
 
-		assert.Equal(t, expected, MapOr(s, def, f))
+		assert.Equal(t, expected, MapOr(s, def, strconv.Itoa))
 	})
 
 	t.Run("none", func(t *testing.T) {
@@ -114,6 +108,7 @@ func TestMapOr_ReturnsTheMappedValueOrDefault(t *testing.T) {
 		def := fake.RandomStringWithLength(9)
 		f := func(any) string {
 			assert.Fail(t, "mapper should not have been called")
+
 			return ""
 		}
 
@@ -126,17 +121,15 @@ func TestMapOrElse_ReturnsTheMappedValueOrCallsDefaultFactory(t *testing.T) {
 		val := fake.Int()
 		s := Some(val)
 
-		mapper := func(v int) string {
-			return strconv.Itoa(v)
-		}
 		factory := func() string {
 			assert.Fail(t, "factory should not have been called")
+
 			return fake.RandomStringWithLength(9)
 		}
 
 		expected := strconv.Itoa(val)
 
-		assert.Equal(t, expected, MapOrElse(s, factory, mapper))
+		assert.Equal(t, expected, MapOrElse(s, factory, strconv.Itoa))
 	})
 
 	t.Run("none", func(t *testing.T) {
@@ -144,6 +137,7 @@ func TestMapOrElse_ReturnsTheMappedValueOrCallsDefaultFactory(t *testing.T) {
 
 		mapper := func(any) string {
 			assert.Fail(t, "mapper should not have been called")
+
 			return ""
 		}
 		def := fake.RandomStringWithLength(9)
@@ -182,6 +176,7 @@ func TestAndThen_ReturnsMappedOrNone(t *testing.T) {
 		other := Some(fake.RandomStringWithLength(8))
 		f := func(o int) Option[string] {
 			assert.Equal(t, val, o)
+
 			return other
 		}
 
@@ -193,6 +188,7 @@ func TestAndThen_ReturnsMappedOrNone(t *testing.T) {
 
 		f := func(_ any) Option[string] {
 			assert.Fail(t, "mapper should not have been called")
+
 			return none[string]{}
 		}
 

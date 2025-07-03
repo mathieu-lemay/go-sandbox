@@ -15,10 +15,10 @@ type Result[T any, E error] interface {
 	IsErr() bool
 	// IsErrAnd returns `true` if the result is Err and the value inside of it matches a predicate.
 	IsErrAnd(f func(error) bool) bool
-	//Ok() option.Option[T]
-	//Err() option.Option[E]
-	//Inspect(func(*T)) Result[T, E]
-	//InspectErr(func(*E)) Result[T, E]
+	// Ok() option.Option[T]
+	// Err() option.Option[E]
+	// Inspect(func(*T)) Result[T, E]
+	// InspectErr(func(*E)) Result[T, E]
 	Expect(msg string) T
 	ExpectErr(msg string) E
 	Unwrap() T

@@ -13,11 +13,11 @@ import (
 
 var fake = faker.NewWithSeed(rand.NewSource(time.Now().UnixNano()))
 
-type TestErrorT struct {
+type MockError struct {
 	e string
 }
 
-func (t *TestErrorT) Error() string {
+func (t *MockError) Error() string {
 	return t.e
 }
 
@@ -25,7 +25,7 @@ func TestFrom_ReturnsNewResultFromArgs(t *testing.T) {
 	t.Run("ok", func(t *testing.T) {
 		v := fake.RandomStringWithLength(8)
 
-		f := func() (string, error) {
+		f := func() (string, error) { //nolint:unparam // Needs this signature
 			return v, nil
 		}
 
@@ -64,6 +64,7 @@ func TestMap_ReturnsANewResultWithMappedValue(t *testing.T) {
 
 		f := func(any) int {
 			assert.Fail(t, "mapper should not have been called")
+
 			return 0
 		}
 
@@ -92,6 +93,7 @@ func TestMapOr_ReturnsTheMappedValueOrDefault(t *testing.T) {
 		def := fake.RandomStringWithLength(9)
 		f := func(any) string {
 			assert.Fail(t, "mapper should not have been called")
+
 			return ""
 		}
 
@@ -106,6 +108,7 @@ func TestMapOrElse_ReturnsTheMappedValueOrCallsDefaultFactory(t *testing.T) {
 
 		factory := func() string {
 			assert.Fail(t, "factory should not have been called")
+
 			return fake.RandomStringWithLength(9)
 		}
 
@@ -120,6 +123,7 @@ func TestMapOrElse_ReturnsTheMappedValueOrCallsDefaultFactory(t *testing.T) {
 
 		mapper := func(any) string {
 			assert.Fail(t, "mapper should not have been called")
+
 			return ""
 		}
 		def := fake.RandomStringWithLength(9)
@@ -136,12 +140,13 @@ func TestMapErr_ReturnsANewResultWithMappedValue(t *testing.T) {
 		value := fake.Int()
 		o := Ok(value)
 
-		f := func(error) *TestErrorT {
+		f := func(error) *MockError {
 			assert.Fail(t, "mapper should not have been called")
+
 			return nil
 		}
 
-		expected := ok[int, *TestErrorT]{value}
+		expected := ok[int, *MockError]{value}
 
 		assert.Equal(t, expected, MapErr(o, f))
 	})
@@ -150,14 +155,14 @@ func TestMapErr_ReturnsANewResultWithMappedValue(t *testing.T) {
 		err := fmt.Errorf("some error: %s", fake.RandomStringWithLength(8))
 		e := Err(err)
 
-		newE := &TestErrorT{e: fmt.Errorf("mapped error: %w", err).Error()}
-		f := func(e error) *TestErrorT {
+		newE := &MockError{e: fmt.Errorf("mapped error: %w", err).Error()}
+		f := func(e error) *MockError {
 			assert.Equal(t, e, err)
 
 			return newE
 		}
 
-		expected := errT[any, *TestErrorT]{err: newE}
+		expected := errT[any, *MockError]{err: newE}
 
 		assert.Equal(t, expected, MapErr(e, f))
 	})

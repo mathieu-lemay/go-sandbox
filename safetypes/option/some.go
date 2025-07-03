@@ -2,14 +2,11 @@ package option
 
 import "github.com/mathieu-lemay/go-sandbox/safetypes/result"
 
-var (
-	_ Option[any] = some[any]{}
-)
-
 type some[T any] struct {
 	val T
 }
 
+// Some creates a Some variant of Option from the value.
 func Some[T any](val T) Option[T] {
 	return some[T]{
 		val: val,
@@ -54,6 +51,7 @@ func (s some[T]) UnwrapOrDefault() T {
 
 func (s some[T]) Inspect(f func(T)) Option[T] {
 	f(s.val)
+
 	return s
 }
 
