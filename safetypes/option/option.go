@@ -2,6 +2,7 @@
 package option
 
 import (
+	"fmt"
 	"reflect"
 )
 
@@ -22,10 +23,7 @@ type Option[T any] interface {
 	OrElse(f func() Option[T]) Option[T]
 	Xor(other Option[T]) Option[T]
 
-	// Implement Stringer
-
-	// String returns a string representation of the Option
-	String() string
+	fmt.Stringer
 }
 
 // Of creates an Option from the given value.

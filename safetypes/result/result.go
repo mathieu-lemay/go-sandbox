@@ -2,6 +2,7 @@
 package result
 
 import (
+	"fmt"
 	"reflect"
 )
 
@@ -25,10 +26,7 @@ type Result[T any, E error] interface {
 	UnwrapOrDefault() T
 	UnwrapErr() E
 
-	// Implement Stringer
-
-	// String returns a string representation of the Result
-	String() string
+	fmt.Stringer
 }
 
 // Of creates a Result from the given value and error.
