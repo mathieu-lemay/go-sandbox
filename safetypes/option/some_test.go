@@ -209,3 +209,12 @@ func TestSome_Xor(t *testing.T) {
 		assert.Equal(t, s, s.Xor(other))
 	})
 }
+
+func TestSome_String(t *testing.T) {
+	value := fake.Int()
+	s := Some(value)
+
+	expected := fmt.Sprintf("Some(%v)", value)
+
+	assert.Equal(t, expected, s.String())
+}

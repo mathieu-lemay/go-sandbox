@@ -194,3 +194,9 @@ func TestNone_Xor(t *testing.T) {
 		assert.Equal(t, n, n.Xor(other))
 	})
 }
+
+func TestNone_String(t *testing.T) {
+	n := none[int]{}
+
+	assert.Equal(t, "None", n.String())
+}

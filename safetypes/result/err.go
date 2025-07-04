@@ -4,8 +4,8 @@ package result
 import "fmt"
 
 // Err creates an Err variant of Result from the error.
-func Err[E error](err E) Result[any, E] {
-	return errT[any, E]{
+func Err[T any, E error](err E) Result[T, E] {
+	return errT[T, E]{
 		err: err,
 	}
 }
@@ -68,4 +68,8 @@ func (e errT[T, E]) UnwrapOrDefault() T {
 
 func (e errT[T, E]) UnwrapErr() E {
 	return e.err
+}
+
+func (e errT[T, E]) String() string {
+	return fmt.Sprintf("Err(%v)", e.err)
 }

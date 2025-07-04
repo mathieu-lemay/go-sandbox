@@ -20,16 +20,16 @@ func TestAsOkOr(t *testing.T) {
 		value := fake.Int()
 		s := option.Some(value)
 
-		expected := result.Ok(value)
+		expected := result.Ok[int, error](value)
 
 		assert.Equal(t, expected, AsOkOr(s, errors.New(fake.RandomStringWithLength(8))))
 	})
 
 	t.Run("none", func(t *testing.T) {
-		n := option.From(0)
+		n := option.Of(0)
 		err := errors.New(fake.RandomStringWithLength(8))
 
-		expected := result.From(0, err)
+		expected := result.Of(0, err)
 
 		assert.Equal(t, expected, AsOkOr(n, err))
 	})
@@ -46,20 +46,20 @@ func TestAsOkOrElse(t *testing.T) {
 			return errors.New(fake.RandomStringWithLength(8))
 		}
 
-		expected := result.Ok(value)
+		expected := result.Ok[int, error](value)
 
 		assert.Equal(t, expected, AsOkOrElse(s, f))
 	})
 
 	t.Run("none", func(t *testing.T) {
-		n := option.From(0)
+		n := option.Of(0)
 		err := errors.New(fake.RandomStringWithLength(8))
 
 		f := func() error {
 			return err
 		}
 
-		expected := result.From(0, err)
+		expected := result.Of(0, err)
 
 		assert.Equal(t, expected, AsOkOrElse(n, f))
 	})
@@ -68,7 +68,7 @@ func TestAsOkOrElse(t *testing.T) {
 func TestAsOptionValue(t *testing.T) {
 	t.Run("ok", func(t *testing.T) {
 		value := fake.Int()
-		o := result.Ok(value)
+		o := result.Ok[int, error](value)
 
 		expected := option.Some(value)
 
@@ -77,9 +77,9 @@ func TestAsOptionValue(t *testing.T) {
 
 	t.Run("err", func(t *testing.T) {
 		err := errors.New(fake.RandomStringWithLength(8))
-		e := result.From(0, err)
+		e := result.Of(0, err)
 
-		expected := option.From(0)
+		expected := option.Of(0)
 
 		assert.Equal(t, expected, AsOptionValue(e))
 	})
@@ -88,18 +88,18 @@ func TestAsOptionValue(t *testing.T) {
 func TestAsOptionErr(t *testing.T) {
 	t.Run("ok", func(t *testing.T) {
 		value := fake.Int()
-		o := result.Ok(value)
+		o := result.Ok[int, error](value)
 
-		expected := option.From((error)(nil))
+		expected := option.Of((error)(nil))
 
 		assert.Equal(t, expected, AsOptionErr(o))
 	})
 
 	t.Run("err", func(t *testing.T) {
 		err := errors.New(fake.RandomStringWithLength(8))
-		e := result.From(0, err)
+		e := result.Of(0, err)
 
-		expected := option.From(err)
+		expected := option.Of(err)
 
 		assert.Equal(t, expected, AsOptionErr(e))
 	})

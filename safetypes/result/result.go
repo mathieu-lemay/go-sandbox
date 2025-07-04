@@ -15,8 +15,6 @@ type Result[T any, E error] interface {
 	IsErr() bool
 	// IsErrAnd returns `true` if the result is Err and the value inside of it matches a predicate.
 	IsErrAnd(f func(error) bool) bool
-	// Ok() option.Option[T]
-	// Err() option.Option[E]
 	Inspect(f func(*T)) Result[T, E]
 	InspectErr(f func(*E)) Result[T, E]
 	Expect(msg string) T
@@ -26,10 +24,15 @@ type Result[T any, E error] interface {
 	UnwrapOrElse(f func() T) T
 	UnwrapOrDefault() T
 	UnwrapErr() E
+
+	// Implement Stringer
+
+	// String returns a string representation of the Result
+	String() string
 }
 
-// From creates a Result from the given value and error.
-func From[T any, E error](val T, err E) Result[T, E] {
+// Of creates a Result from the given value and error.
+func Of[T any, E error](val T, err E) Result[T, E] {
 	if !reflect.ValueOf(&err).Elem().IsNil() {
 		return errT[T, E]{
 			err: err,

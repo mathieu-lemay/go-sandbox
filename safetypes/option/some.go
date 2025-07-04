@@ -1,5 +1,7 @@
 package option
 
+import "fmt"
+
 type some[T any] struct {
 	val T
 }
@@ -75,4 +77,8 @@ func (s some[T]) Xor(other Option[T]) Option[T] {
 	}
 
 	return none[T]{}
+}
+
+func (s some[T]) String() string {
+	return fmt.Sprintf("Some(%v)", s.val)
 }

@@ -21,10 +21,15 @@ type Option[T any] interface {
 	Or(other Option[T]) Option[T]
 	OrElse(f func() Option[T]) Option[T]
 	Xor(other Option[T]) Option[T]
+
+	// Implement Stringer
+
+	// String returns a string representation of the Option
+	String() string
 }
 
-// From creates an Option from the given value.
-func From[T any](val T) Option[T] {
+// Of creates an Option from the given value.
+func Of[T any](val T) Option[T] {
 	if reflect.ValueOf(&val).Elem().IsZero() {
 		return none[T]{}
 	}

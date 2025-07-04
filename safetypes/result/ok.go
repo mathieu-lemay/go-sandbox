@@ -4,8 +4,8 @@ package result
 import "fmt"
 
 // Ok creates an Ok variant of Result from the value.
-func Ok[T any](val T) Result[T, error] {
-	return ok[T, error]{
+func Ok[T any, E error](val T) Result[T, E] {
+	return ok[T, E]{
 		val: val,
 	}
 }
@@ -66,4 +66,8 @@ func (o ok[T, E]) UnwrapOrDefault() T {
 
 func (o ok[T, E]) UnwrapErr() E {
 	panic(fmt.Errorf("called `Result.UnwrapErr()` on an `Ok` value: %v", o.val))
+}
+
+func (o ok[T, E]) String() string {
+	return fmt.Sprintf("Ok(%v)", o.val)
 }
