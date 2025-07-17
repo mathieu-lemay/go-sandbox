@@ -9,45 +9,15 @@ repos:
       - id: check-toml
       - id: end-of-file-fixer
       - id: trailing-whitespace
-  - repo: local
+  - repo: https://github.com/golangci/golangci-lint
+    rev: v2.2.1
     hooks:
-      - id: golines
-        name: golines
-        description: A golang formatter that fixes long lines
-        language: golang
-        entry: golines
-        args:
-          - "-w"
-          - "--no-reformat-tags"
-          - "--base-formatter"
-          - "gofmt"
-        types: [go]
-        additional_dependencies:
-          - "github.com/segmentio/golines@13c3f0d"
-      - id: goimports-reviser
-        name: goimports-reviser
-        description: Right imports sorting & code formatting tool (goimports alternative)
-        language: golang
-        entry: goimports-reviser
-        args:
-          - "-rm-unused"
-          - "-format"
-          - "-company-prefixes"
-          - "github.com/mathieu-lemay/"
-          - "-use-cache"
-        types: [go]
-        additional_dependencies:
-          - "github.com/incu6us/goimports-reviser/v3@v3.9.1"
+      - id: golangci-lint-fmt
+      - id: golangci-lint-full
+        name: golangci-lint
+        alias: golangci-lint
   - repo: https://github.com/dnephin/pre-commit-golang
     rev: v0.5.1
     hooks:
       - id: go-mod-tidy
       - id: no-go-testing
-  - repo: https://github.com/golangci/golangci-lint
-    rev: v2.1.6
-    hooks:
-      - id: golangci-lint-full
-        name: golangci-lint
-        alias: golangci-lint
-        additional_dependencies:
-          - "github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.1.6"
